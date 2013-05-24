@@ -63,10 +63,10 @@ def diff(first, second, node=None):
         if first != second:
             yield CHANGE, dotted_node, second
 
-    return {
-        # differs
+    differs = {
         dict: diff_dict,
         list: diff_list
-    }.get(type(first),
-          # default differ
-          diff_otherwise)()
+    }
+
+    differ = differs.get(type(first))
+    return (differ or diff_otherwise)()
