@@ -9,7 +9,7 @@ class DictDifferTests(unittest.TestCase):
         first = {}
         second = {'a': 'b'}
         diffed = next(diff(first, second))
-        assert ('add', '', ['a']) == diffed
+        assert ('add', '', [('a', 'b')]) == diffed
 
     def test_deletion(self):
         first = {'a': 'b'}
@@ -17,11 +17,17 @@ class DictDifferTests(unittest.TestCase):
         diffed = next(diff(first, second))
         assert ('remove', '', ['a']) == diffed
 
+    def test_change(self):
+        first = {'a': 'b'}
+        second = {'a': 'c'}
+        diffed = next(diff(first, second))
+        assert ('change', 'a', 'c') == diffed
+
     def test_nodes(self):
         first = {'a': {'b': {'c': 'd'}}}
         second = {'a': {'b': {'c': 'd', 'e': 'f'}}}
         diffed = next(diff(first, second))
-        assert ('add', 'a.b', ['e']) == diffed
+        assert ('add', 'a.b', [('e', 'f')]) == diffed
 
     def test_push(self):
         first = {'a': []}
