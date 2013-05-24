@@ -1,3 +1,5 @@
+import collections
+
 (ADD, REMOVE, PUSH, PULL, CHANGE) = (
     'add', 'remove', 'push', 'pull', 'change')
 
@@ -13,11 +15,14 @@ def diff(first, second, node=None):
     node = node or []
     dotted_node = '.'.join(node)
 
-    first_set = set(first)
-    second_set = set(second)
-    intersection = second_set & first_set
-    addition = list(second_set - intersection)
-    deletion = list(first_set - intersection)
+    assert type(first) is type(second), \
+        "You can't compare different typed objects."
+
+    if isinstance(first, collections.Iterable):
+        # dictionaries are not hashable, we can't use sets
+        intersection = [k for k in first if k in second]
+        addition = [k for k in second if not k in first]
+        deletion = [k for k in first if not k in second]
 
     def diff_dict():
         """Compares if object is a dictionary. Callees again the parent
@@ -33,16 +38,13 @@ def diff(first, second, node=None):
             yield REMOVE, dotted_node, deletion
 
         for key in intersection:
-            first_value = first[key]
-            second_value = second[key]
-
             # if type is not changed, callees again diff function to compare.
             # otherwise, the change will be handled as `change` flag.
-            if type(first_value) is type(second_value):
+            if type(first[key]) is type(second[key]):
 
                 recurred = diff(
-                    first_value,
-                    second_value,
+                    first[key],
+                    second[key],
                     node=node + [key])
 
                 for diffed in recurred:
