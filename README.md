@@ -1,10 +1,6 @@
-Work in progress.
-
 ### Dictdiffer
 
 Dictdiffer is a helper module that helps you to diff and patch dictionaries.
-
-There are two function in dictdiffer module; diff and patch.
 
 #### dictdiffer.diff
 Compares two dictionary object and returns a diff result.
@@ -12,18 +8,23 @@ Compares two dictionary object and returns a diff result.
 #### dictdiffer.patch
 Applies the diff result to the old dictionary.
 
+### dictdiffer.swap
+Swaps the diff result to revert changes.
+
+### dicdiffer.revert
+A shortcut function that swaps and patches the diff result to
+destination dictionary.
+
 ### Examples
 
 ```python
-
-from dictdiffer import diff, patch
+from dictdiffer import diff, patch, swap, revert
 
 first = {
     "title": "hello",
     "fork_count": 20,
     "stargazers": ["/users/20", "/users/30"],
     "settings": {
-        "is_public": True,
         "assignees": [100, 101, 201],
     }
 }
@@ -34,7 +35,6 @@ second = {
     "fork_count": 20,
     "stargazers": ["/users/20", "/users/30", "/users/40"],
     "settings": {
-        "is_public": False,
         "assignees": [100, 101, 202],
     }
 }
@@ -42,24 +42,40 @@ second = {
 result = diff(first, second)
 
 assert list(result) == [
-    ('change', 'settings.is_public', False),
     ('push', 'settings.assignees', [202]),
     ('pull', 'settings.assignees', [201]),
     ('push', 'stargazers', ['/users/40']),
-    ('change', 'title', 'hellooo')]
+    ('change', 'title', ('hello', 'hellooo'))]
+```
 
+Now we can apply the diff result with `patch` method.
 
-# Now we can apply diff result
-
+```python
 result = diff(first, second)
 patched = patch(result, first)
 
 assert patched == second
 ```
 
-### Todo
+Also we can swap the diff result with `swap` method.
 
- - Revisions
+```python
+result = diff(first, second)
+swapped = swap(result)
+
+assert list(swapped) == [
+    ('pull', 'settings.assignees', [202]),
+    ('push', 'settings.assignees', [201]),
+    ('pull', 'stargazers', ['/users/40']),
+    ('change', 'title', ('hellooo', 'hello'))]
+```
+
+Let's revert the last changes.
+
+```python
+reverted = revert(result, patched)
+assert reverted == first
+```
 
 ### Contribution & Tests
 
@@ -67,10 +83,10 @@ After your changes, you could run the tests to ensure everything is
 operating correctly.
 
     $ source run_tests.sh
-    Ran 11 tests in 0.002s
+    Ran 15 tests in 0.002s
 
     Name         Stmts   Miss  Cover   Missing
     ------------------------------------------
-    dictdiffer      64      0   100%
+    dictdiffer      74      0   100%
     ------------------------------------------
-    TOTAL           64      0   100%
+    TOTAL           74      0   100%
