@@ -60,7 +60,6 @@ assert patched == second
 ### Todo
 
  - Revisions
- - Revert
 
 ### Contribution & Tests
 

@@ -1,3 +1,4 @@
+import copy
 import collections
 
 (ADD, REMOVE, PUSH, PULL, CHANGE) = (
@@ -10,7 +11,7 @@ def diff(first, second, node=None):
 
         >>> result = diff({'a':'b'}, {'a':'c'})
         >>> list(result)
-        [('change', 'a', 'c')]
+        [('change', 'a', ('b', 'c'))]
 
     """
     node = node or []
@@ -39,7 +40,7 @@ def diff(first, second, node=None):
             yield REMOVE, dotted_node, [
                 # for deletions, return the list of removed keys
                 # and values.
-                (k, first[key]) for key in deletion]
+                (key, first[key]) for key in deletion]
 
         for key in intersection:
             # if type is not changed, callees again diff function to compare.
@@ -89,7 +90,7 @@ def patch(diff_result, destination):
         {'numbers': [2, 3]}
 
     """
-    destination = destination.copy()
+    destination = copy.deepcopy(destination)
 
     for action, node, change in diff_result:
 
@@ -118,6 +119,53 @@ def patch(diff_result, destination):
                 dest.append(val)
 
     return destination
+
+
+def swap(diff_result):
+    """
+    Swaps the diff result with the following mapping
+
+        pull -> push
+        push -> pull
+        remove -> add
+        add -> remove
+
+    In addition, swaps the changed values for `change` flag.
+
+        >>> swapped = swap([('add', 'a.b.c', ('a', 'b'))])
+        >>> next(swapped)
+        ('remove', 'a.b.c', ('a', 'b'))
+
+        >>> swapped = swap([('change', 'a.b.c', ('a', 'b'))])
+        >>> next(swapped)
+        ('change', 'a.b.c', ('b', 'a'))
+
+    """
+    swapping = {
+        PULL: PUSH, PUSH: PULL, REMOVE: ADD, ADD: REMOVE}
+
+    for action, node, change in diff_result:
+        if action == CHANGE:
+            first, second = change
+            # swap the changed values
+            yield action, node, (second, first)
+        else:
+            # mapped actions can be swapped with opposite flags.
+            yield swapping[action], node, change
+
+
+def revert(diff_result, destination):
+    """
+    A helper function that calles swap function to revert
+    patched dictionary object.
+
+        >>> first = {'a': 'b'}
+        >>> second = {'a': 'c'}
+        >>> revert(diff(first, second), second)
+        {'a': 'b'}
+
+    """
+    return patch(swap(diff_result), destination)
 
 
 def dot_lookup(source, lookup, parent=False):

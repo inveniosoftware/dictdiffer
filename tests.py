@@ -1,6 +1,6 @@
 import unittest
 
-from dictdiffer import diff, patch
+from dictdiffer import diff, patch, revert, swap
 
 
 class DictDifferTests(unittest.TestCase):
@@ -92,6 +92,40 @@ class DiffPatcherTests(unittest.TestCase):
         assert second == patch(
             [('push', 'a.b', [2])], first)
 
+
+class SwapperTests(unittest.TestCase):
+    def test_addition(self):
+        result = 'add', '', [('a', 'b')]
+        swapped = 'remove', '', [('a', 'b')]
+        assert next(swap([result])) == swapped
+
+        result = 'remove', 'a.b', [('c', 'd')]
+        swapped = 'add', 'a.b', [('c', 'd')]
+        assert next(swap([result])) == swapped
+
+    def test_changes(self):
+        result = 'change', '', ('a', 'b')
+        swapped = 'change', '', ('b', 'a')
+        assert next(swap([result])) == swapped
+
+    def test_lists(self):
+        result = 'pull', '', [1, 2]
+        swapped = 'push', '', [1, 2]
+        assert next(swap([result])) == swapped
+
+        result = 'push', '', [1, 2]
+        swapped = 'pull', '', [1, 2]
+        assert next(swap([result])) == swapped
+
+    def test_revert(self):
+        first = {'a': 'b'}
+        second = {'a': 'c'}
+        diffed = diff(first, second)
+        patched = patch(diffed, first)
+        assert patched == second
+        diffed = diff(first, second)
+        reverted = revert(diffed, second)
+        assert reverted == first
 
 if __name__ == "__main__":
     unittest.main()
