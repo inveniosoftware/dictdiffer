@@ -1,3 +1,5 @@
+Work in progress.
+
 ### Dictdiffer
 
 Dictdiffer is a helper module that helps you to diff and patch dictionaries.
