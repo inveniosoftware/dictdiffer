@@ -56,3 +56,24 @@ patched = patch(result, first)
 
 assert patched == second
 ```
+
+### Todo
+
+ - Revisions
+ - Revert
+
+### Contribution & Tests
+
+After your changes, you could run the tests to ensure everything is
+operating correctly.
+
+    $ source run_tests.sh
+
+    Ran 11 tests in 0.002s
+
+    OK
+    Name         Stmts   Miss  Cover   Missing
+    ------------------------------------------
+    dictdiffer      64      0   100%
+    ------------------------------------------
+    TOTAL           64      0   100%
