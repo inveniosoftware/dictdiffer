@@ -8,10 +8,10 @@ Compares two dictionary object and returns a diff result.
 #### dictdiffer.patch
 Applies the diff result to the old dictionary.
 
-### dictdiffer.swap
+#### dictdiffer.swap
 Swaps the diff result to revert changes.
 
-### dicdiffer.revert
+#### dicdiffer.revert
 A shortcut function that swaps and patches the diff result to
 destination dictionary.
 
