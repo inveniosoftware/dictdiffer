@@ -5,7 +5,8 @@ import collections
 
 
 def diff(first, second, node=None):
-    """Compares two dictionary object, and returns a diff result.
+    """
+    Compares two dictionary object, and returns a diff result.
 
         >>> result = diff({'a':'b'}, {'a':'c'})
         >>> list(result)
@@ -72,3 +73,78 @@ def diff(first, second, node=None):
 
     differ = differs.get(type(first))
     return (differ or diff_otherwise)()
+
+
+def patch(diff_result, destination):
+    """
+    Patches the diff result to the old dictionary.
+
+        >>> patch([('push', 'numbers', [2, 3])], {'numbers': []})
+        {'numbers': [2, 3]}
+
+        >>> patch([('pull', 'numbers', [1])], {'numbers': [1, 2, 3]})
+        {'numbers': [2, 3]}
+
+    """
+    destination = destination.copy()
+
+    for action, node, change in diff_result:
+
+        if action == ADD:
+            for key, value in change:
+                dot_lookup(destination, node)[key] = value
+
+        elif action == CHANGE:
+            dest = dot_lookup(destination, node, parent=True)
+            last_node = node.split('.')[-1]
+            dest[last_node] = change
+
+        elif action == REMOVE:
+            for key in change:
+                del dot_lookup(destination, node)[key]
+
+        elif action == PULL:
+            dest = dot_lookup(destination, node)
+            for val in change:
+                dest.remove(val)
+
+        elif action == PUSH:
+            dest = dot_lookup(destination, node)
+            for val in change:
+                dest.append(val)
+
+    return destination
+
+
+def dot_lookup(source, lookup, parent=False):
+    """
+    A helper function that allows you to reach dictionary
+    items with dot lookup (e.g. document.properties.settings)
+
+        >>> dot_lookup({'a': {'b': 'hello'}}, 'a.b')
+        'hello'
+
+    If parent argument is True, returns the parent node of matched
+    object.
+
+        >>> dot_lookup({'a': {'b': 'hello'}}, 'a.b', parent=True)
+        {'b': 'hello'}
+
+    If node is empy value, returns the whole dictionary object.
+
+        >>> dot_lookup({'a': {'b': 'hello'}}, '')
+        {'a': {'b': 'hello'}}
+
+    """
+    if not lookup:
+        return source
+
+    value = source
+    keys = lookup.split('.')
+
+    if parent:
+        keys = keys[:-1]
+
+    for key in keys:
+        value = value[key]
+    return value
