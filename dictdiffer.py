@@ -67,7 +67,7 @@ def diff(first, second, node=None):
     def diff_otherwise():
         """Compares string and integer types. Yields `change` flag."""
         if first != second:
-            yield CHANGE, dotted_node, second
+            yield CHANGE, dotted_node, (first, second)
 
     differs = {
         dict: diff_dict,
@@ -100,7 +100,8 @@ def patch(diff_result, destination):
         elif action == CHANGE:
             dest = dot_lookup(destination, node, parent=True)
             last_node = node.split('.')[-1]
-            dest[last_node] = change
+            _, value = change
+            dest[last_node] = value
 
         elif action == REMOVE:
             for key, _ in change:
