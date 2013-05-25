@@ -31,12 +31,15 @@ def diff(first, second, node=None):
         Yields `add` and `remove` flags."""
         if addition:
             yield ADD, dotted_node, [
-                # for additions, returns a list that consist with two-pairs.
+                # for additions, return a list that consist with
+                # two-pair tuples.
                 (key, second[key]) for key in addition]
 
         if deletion:
-            # for deletions, returns the list of removed keys
-            yield REMOVE, dotted_node, deletion
+            yield REMOVE, dotted_node, [
+                # for deletions, return the list of removed keys
+                # and values.
+                (k, first[key]) for key in deletion]
 
         for key in intersection:
             # if type is not changed, callees again diff function to compare.
@@ -100,7 +103,7 @@ def patch(diff_result, destination):
             dest[last_node] = change
 
         elif action == REMOVE:
-            for key in change:
+            for key, _ in change:
                 del dot_lookup(destination, node)[key]
 
         elif action == PULL:

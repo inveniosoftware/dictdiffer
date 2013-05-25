@@ -14,7 +14,7 @@ class DictDifferTests(unittest.TestCase):
         first = {'a': 'b'}
         second = {}
         diffed = next(diff(first, second))
-        assert ('remove', '', ['a']) == diffed
+        assert ('remove', '', [('a', 'b')]) == diffed
 
     def test_change(self):
         first = {'a': 'b'}
@@ -68,12 +68,12 @@ class DiffPatcherTests(unittest.TestCase):
         first = {'a': {'b': 'c'}}
         second = {'a': {}}
         assert second == patch(
-            [('remove', 'a', ['b'])], first)
+            [('remove', 'a', [('b', 'c')])], first)
 
         first = {'a': 'b'}
         second = {}
         assert second == patch(
-            [('remove', '', ['a'])], first)
+            [('remove', '', [('a', 'b')])], first)
 
     def test_pull(self):
         first = {'a': [1, 2, 3]}
