@@ -77,6 +77,11 @@ reverted = revert(result, patched)
 assert reverted == first
 ```
 
+### Why I built it?
+
+I decided to make revision history mechanism in [dbpatterns.com](http://dbpatterns.com) for documents. Documents are storing in MongoDB, 
+so I was needed a dictionary differ that diffs two dictionary and reverts back changes.
+
 ### Contribution & Tests
 
 After your changes, you could run the tests to ensure everything is
