@@ -150,17 +150,33 @@ def swap(diff_result):
         ('change', 'a.b.c', ('b', 'a'))
 
     """
-    swapping = {
-        PULL: PUSH, PUSH: PULL, REMOVE: ADD, ADD: REMOVE}
+
+    def push(node, changes):
+        return PULL, node, changes
+
+    def pull(node, changes):
+        return PUSH, node, changes
+
+    def add(node, changes):
+        return REMOVE, node, changes
+
+    def remove(node, changes):
+        return ADD, node, changes
+
+    def change(node, changes):
+        first, second = changes
+        return CHANGE, node, (second, first)
+
+    swappers = {
+        PUSH: push,
+        PULL: pull,
+        REMOVE: remove,
+        ADD: add,
+        CHANGE: change
+    }
 
     for action, node, change in diff_result:
-        if action == CHANGE:
-            first, second = change
-            # swap the changed values
-            yield action, node, (second, first)
-        else:
-            # mapped actions can be swapped with opposite flags.
-            yield swapping[action], node, change
+        yield swappers[action](node, change)
 
 
 def revert(diff_result, destination):
