@@ -11,7 +11,7 @@ Applies the diff result to the old dictionary.
 #### dictdiffer.swap
 Swaps the diff result to revert changes.
 
-#### dicdiffer.revert
+#### dictdiffer.revert
 A shortcut function that swaps and patches the diff result to
 destination dictionary.
 
