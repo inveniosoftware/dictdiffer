@@ -92,31 +92,40 @@ def patch(diff_result, destination):
     """
     destination = copy.deepcopy(destination)
 
-    for action, node, change in diff_result:
+    def add(node, changes):
+        for key, value in changes:
+            dot_lookup(destination, node)[key] = value
 
-        if action == ADD:
-            for key, value in change:
-                dot_lookup(destination, node)[key] = value
+    def change(node, changes):
+        dest = dot_lookup(destination, node, parent=True)
+        last_node = node.split('.')[-1]
+        _, value = changes
+        dest[last_node] = value
 
-        elif action == CHANGE:
-            dest = dot_lookup(destination, node, parent=True)
-            last_node = node.split('.')[-1]
-            _, value = change
-            dest[last_node] = value
+    def remove(node, changes):
+        for key, _ in changes:
+            del dot_lookup(destination, node)[key]
 
-        elif action == REMOVE:
-            for key, _ in change:
-                del dot_lookup(destination, node)[key]
+    def pull(node, changes):
+        dest = dot_lookup(destination, node)
+        for val in changes:
+            dest.remove(val)
 
-        elif action == PULL:
-            dest = dot_lookup(destination, node)
-            for val in change:
-                dest.remove(val)
+    def push(node, changes):
+        dest = dot_lookup(destination, node)
+        for val in changes:
+            dest.append(val)
 
-        elif action == PUSH:
-            dest = dot_lookup(destination, node)
-            for val in change:
-                dest.append(val)
+    patchers = {
+        PUSH: push,
+        PULL: pull,
+        REMOVE: remove,
+        ADD: add,
+        CHANGE: change
+    }
+
+    for action, node, changes in diff_result:
+        patchers[action](node, changes)
 
     return destination
 
