@@ -15,6 +15,10 @@ Swaps the diff result to revert changes.
 A shortcut function that swaps and patches the diff result to
 destination dictionary.
 
+### Installation
+
+    $ pip install dictdiffer
+
 ### Examples
 
 ```python
