@@ -1,35 +1,45 @@
 import copy
-import collections
 
 (ADD, REMOVE, PUSH, PULL, CHANGE) = (
     'add', 'remove', 'push', 'pull', 'change')
 
 
-def diff(first, second, node=None):
+class Differ(object):
     """
     Compares two dictionary object, and returns a diff result.
 
-        >>> result = diff({'a':'b'}, {'a':'c'})
+        >>> differ = Differ()
+        >>> result = differ({'a':'b'}, {'a':'c'})
         >>> list(result)
         [('change', 'a', ('b', 'c'))]
 
     """
-    node = node or []
-    dotted_node = '.'.join(node)
 
-    assert type(first) is type(second), \
-        "You can't compare different typed objects."
+    # dictionaries are not hashable, we can't use sets
+    def intersection(self, first, second):
+        """Returns the intersection of given objects"""
+        return [k for k in first if k in second]
 
-    if isinstance(first, collections.Iterable):
-        # dictionaries are not hashable, we can't use sets
-        intersection = [k for k in first if k in second]
-        addition = [k for k in second if not k in first]
-        deletion = [k for k in first if not k in second]
+    def addition(self, first, second):
+        """Returns the added items of second object"""
+        return [k for k in second if not k in first]
 
-    def diff_dict():
+    def deletion(self, first, second):
+        """Returns deleted items from first object"""
+        return [k for k in first if not k in second]
+
+    def dotted(self, node):
+        """Returns dotted notation of node"""
+        return '.'.join(node)
+
+    def diff_dict(self, first, second, node):
         """Compares if object is a dictionary. Callees again the parent
         function as recursive if dictionary have child objects.
         Yields `add` and `remove` flags."""
+        addition = self.addition(first, second)
+        deletion = self.deletion(first, second)
+        dotted_node = self.dotted(node)
+
         if addition:
             yield ADD, dotted_node, [
                 # for additions, return a list that consist with
@@ -42,12 +52,12 @@ def diff(first, second, node=None):
                 # and values.
                 (key, first[key]) for key in deletion]
 
-        for key in intersection:
+        for key in self.intersection(first, second):
             # if type is not changed, callees again diff function to compare.
             # otherwise, the change will be handled as `change` flag.
             if type(first[key]) is type(second[key]):
 
-                recurred = diff(
+                recurred = self(
                     first[key],
                     second[key],
                     node=node + [key])
@@ -55,8 +65,12 @@ def diff(first, second, node=None):
                 for diffed in recurred:
                     yield diffed
 
-    def diff_list():
+    def diff_list(self, first, second, node):
         """Compares if objects are list. Yields `push` and `pull` flags."""
+        addition = self.addition(first, second)
+        deletion = self.deletion(first, second)
+        dotted_node = self.dotted(node)
+
         if addition:
             # the addition will be consist with the list of added values.
             yield PUSH, dotted_node, addition
@@ -65,72 +79,75 @@ def diff(first, second, node=None):
             # for deletions, returns the list of removed items
             yield PULL, dotted_node, deletion
 
-    def diff_otherwise():
+    def diff_otherwise(self, first, second, node):
         """Compares string and integer types. Yields `change` flag."""
         if first != second:
-            yield CHANGE, dotted_node, (first, second)
+            yield CHANGE, self.dotted(node), (first, second)
 
-    differs = {
-        dict: diff_dict,
-        list: diff_list
-    }
+    def __call__(self, first, second, node=None):
+        """Calles the differ method by the type of object that
+        will be compared"""
 
-    differ = differs.get(type(first))
-    return (differ or diff_otherwise)()
+        assert type(first) is type(second), \
+            "You can't compare different typed objects."
+
+        differ = {
+                     dict: self.diff_dict,
+                     list: self.diff_list
+                 }.get(type(first)) or self.diff_otherwise
+
+        return differ(first, second, node or [])
 
 
-def patch(diff_result, destination):
-    """
-    Patches the diff result to the old dictionary.
+diff = Differ()
 
-        >>> patch([('push', 'numbers', [2, 3])], {'numbers': []})
-        {'numbers': [2, 3]}
 
-        >>> patch([('pull', 'numbers', [1])], {'numbers': [1, 2, 3]})
-        {'numbers': [2, 3]}
+class Patcher(object):
+    def __call__(self, diff_result, destination):
+        """
+        Patches the diff result to the old dictionary.
 
-    """
-    destination = copy.deepcopy(destination)
+            >>> patcher = Patcher()
+            >>> patcher([('push', 'numbers', [2, 3])], {'numbers': []})
+            {'numbers': [2, 3]}
+            >>> patcher([('pull', 'numbers', [1])], {'numbers': [1, 2, 3]})
+            {'numbers': [2, 3]}
 
-    def add(node, changes):
+        """
+        destination = copy.deepcopy(destination)
+        for action, node, changes in diff_result:
+            getattr(self, action)(destination, node, changes)
+        return destination
+
+    def add(self, destination, node, changes):
         for key, value in changes:
             dot_lookup(destination, node)[key] = value
 
-    def change(node, changes):
+    def change(self, destination, node, changes):
         dest = dot_lookup(destination, node, parent=True)
         last_node = node.split('.')[-1]
         _, value = changes
         dest[last_node] = value
 
-    def remove(node, changes):
+    def remove(self, destination, node, changes):
         for key, _ in changes:
             del dot_lookup(destination, node)[key]
 
-    def pull(node, changes):
+    def pull(self, destination, node, changes):
         dest = dot_lookup(destination, node)
         for val in changes:
             dest.remove(val)
 
-    def push(node, changes):
+    def push(self, destination, node, changes):
         dest = dot_lookup(destination, node)
         for val in changes:
             dest.append(val)
 
-    patchers = {
-        PUSH: push,
-        PULL: pull,
-        REMOVE: remove,
-        ADD: add,
-        CHANGE: change
-    }
 
-    for action, node, changes in diff_result:
-        patchers[action](node, changes)
-
-    return destination
+patch = Patcher()
 
 
-def swap(diff_result):
+class Swapper(object):
     """
     Swaps the diff result with the following mapping
 
@@ -141,42 +158,39 @@ def swap(diff_result):
 
     In addition, swaps the changed values for `change` flag.
 
-        >>> swapped = swap([('add', 'a.b.c', ('a', 'b'))])
+        >>> swapper = Swapper()
+        >>> swapped = swapper([('add', 'a.b.c', ('a', 'b'))])
         >>> next(swapped)
         ('remove', 'a.b.c', ('a', 'b'))
 
-        >>> swapped = swap([('change', 'a.b.c', ('a', 'b'))])
+        >>> swapped = swapper([('change', 'a.b.c', ('a', 'b'))])
         >>> next(swapped)
         ('change', 'a.b.c', ('b', 'a'))
 
     """
 
-    def push(node, changes):
+    def __call__(self, diff_result):
+        for action, node, change in diff_result:
+            yield getattr(self, action)(node, change)
+
+    def push(self, node, changes):
         return PULL, node, changes
 
-    def pull(node, changes):
+    def pull(self, node, changes):
         return PUSH, node, changes
 
-    def add(node, changes):
+    def add(self, node, changes):
         return REMOVE, node, changes
 
-    def remove(node, changes):
+    def remove(self, node, changes):
         return ADD, node, changes
 
-    def change(node, changes):
+    def change(self, node, changes):
         first, second = changes
         return CHANGE, node, (second, first)
 
-    swappers = {
-        PUSH: push,
-        PULL: pull,
-        REMOVE: remove,
-        ADD: add,
-        CHANGE: change
-    }
 
-    for action, node, change in diff_result:
-        yield swappers[action](node, change)
+swap = Swapper()
 
 
 def revert(diff_result, destination):
