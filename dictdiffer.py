@@ -92,9 +92,9 @@ class Differ(object):
             "You can't compare different typed objects."
 
         differ = {
-                     dict: self.diff_dict,
-                     list: self.diff_list
-                 }.get(type(first)) or self.diff_otherwise
+            dict: self.diff_dict,
+            list: self.diff_list
+        }.get(type(first)) or self.diff_otherwise
 
         return differ(first, second, node or [])
 
