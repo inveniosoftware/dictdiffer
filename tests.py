@@ -22,6 +22,11 @@ class DictDifferTests(unittest.TestCase):
         diffed = next(diff(first, second))
         assert ('change', 'a', ('b', 'c')) == diffed
 
+        first = {'a': None}
+        second = {'a': 'c'}
+        diffed = next(diff(first, second))
+        assert ('change', 'a', (None, 'c')) == diffed
+
     def test_nodes(self):
         first = {'a': {'b': {'c': 'd'}}}
         second = {'a': {'b': {'c': 'd', 'e': 'f'}}}

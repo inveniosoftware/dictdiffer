@@ -17,9 +17,6 @@ def diff(first, second, node=None):
     node = node or []
     dotted_node = '.'.join(node)
 
-    assert type(first) is type(second), \
-        "You can't compare different typed objects."
-
     if isinstance(first, collections.Iterable):
         # dictionaries are not hashable, we can't use sets
         intersection = [k for k in first if k in second]
@@ -45,15 +42,13 @@ def diff(first, second, node=None):
         for key in intersection:
             # if type is not changed, callees again diff function to compare.
             # otherwise, the change will be handled as `change` flag.
-            if type(first[key]) is type(second[key]):
+            recurred = diff(
+                first[key],
+                second[key],
+                node=node + [key])
 
-                recurred = diff(
-                    first[key],
-                    second[key],
-                    node=node + [key])
-
-                for diffed in recurred:
-                    yield diffed
+            for diffed in recurred:
+                yield diffed
 
     def diff_list():
         """Compares if objects are list. Yields `push` and `pull` flags."""
