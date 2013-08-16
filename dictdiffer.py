@@ -5,7 +5,7 @@ import collections
     'add', 'remove', 'push', 'pull', 'change')
 
 
-def diff(first, second, node=None):
+def diff (first, second, node=None):
     """
     Compares two dictionary object, and returns a diff result.
 
@@ -23,7 +23,7 @@ def diff(first, second, node=None):
         addition = [k for k in second if not k in first]
         deletion = [k for k in first if not k in second]
 
-    def diff_dict():
+    def  diff_dict():
         """Compares if object is a dictionary. Callees again the parent
         function as recursive if dictionary have child objects.
         Yields `add` and `remove` flags."""
@@ -146,7 +146,7 @@ def swap(diff_result):
 
     """
 
-    def push(node, changes):
+    def push(node , changes):
         return PULL, node, changes
 
     def pull(node, changes):
