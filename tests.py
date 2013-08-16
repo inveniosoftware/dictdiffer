@@ -2,12 +2,12 @@ from testscenarios.scenarios import generate_scenarios
 import unittest
 from io import BytesIO
 
-import dictdiffer
-from dictdiffernew import DictDiffer
+import dictdifferold
+from dictdiffer import DictDiffer
 
 from testscenarios import TestWithScenarios
 
-scenario_dictdiffer = ('old',{'differ':dictdiffer})
+scenario_dictdiffer = ('old',{'differ':dictdifferold})
 scenario_dictdiffernew = ('new',{'differ':DictDiffer()})
 
 class DictDifferTests(TestWithScenarios):

@@ -1,6 +1,6 @@
 import benchmark
-import dictdiffer
-from dictdiffernew import DictDiffer
+from dictdiffer import DictDiffer
+import dictdifferold as dictdiffer
 def set_diff(first,second):
     firstset = frozenset(first)
     secondset = frozenset(second)
