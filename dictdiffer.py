@@ -17,7 +17,8 @@ def diff(first, second, node=None):
     node = node or []
     dotted_node = '.'.join(node)
 
-    if isinstance(first, collections.Iterable):
+    if (isinstance(first, collections.Iterable)
+            and not isinstance(first, basestring)):
         # dictionaries are not hashable, we can't use sets
         intersection = [k for k in first if k in second]
         addition = [k for k in second if not k in first]
