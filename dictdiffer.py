@@ -1,8 +1,7 @@
 import copy
-import collections
 
-(ADD, REMOVE, PUSH, PULL, CHANGE) = (
-    'add', 'remove', 'push', 'pull', 'change')
+(ADD, REMOVE, CHANGE) = (
+    'add', 'remove', 'change')
 
 
 def diff(first, second, node=None):
@@ -17,16 +16,34 @@ def diff(first, second, node=None):
     node = node or []
     dotted_node = '.'.join(node)
 
-    if isinstance(first, collections.Iterable):
+    if isinstance(first, dict):
         # dictionaries are not hashable, we can't use sets
         intersection = [k for k in first if k in second]
         addition = [k for k in second if not k in first]
         deletion = [k for k in first if not k in second]
+    elif isinstance(first, list):
+        len_first = len(first)
+        len_second = len(second)
 
-    def diff_dict():
+        intersection = range(0, min(len_first, len_second))
+        addition = range(min(len_first, len_second), len_second)
+        deletion = range(min(len_first, len_second), len_first)
+
+    def diff_dict_list():
         """Compares if object is a dictionary. Callees again the parent
         function as recursive if dictionary have child objects.
         Yields `add` and `remove` flags."""
+        for key in intersection:
+            # if type is not changed, callees again diff function to compare.
+            # otherwise, the change will be handled as `change` flag.
+            recurred = diff(
+                first[key],
+                second[key],
+                node=node + [str(key) if isinstance(key, int) else key])
+
+            for diffed in recurred:
+                yield diffed
+
         if addition:
             yield ADD, dotted_node, [
                 # for additions, return a list that consist with
@@ -39,35 +56,14 @@ def diff(first, second, node=None):
                 # and values.
                 (key, first[key]) for key in deletion]
 
-        for key in intersection:
-            # if type is not changed, callees again diff function to compare.
-            # otherwise, the change will be handled as `change` flag.
-            recurred = diff(
-                first[key],
-                second[key],
-                node=node + [key])
-
-            for diffed in recurred:
-                yield diffed
-
-    def diff_list():
-        """Compares if objects are list. Yields `push` and `pull` flags."""
-        if addition:
-            # the addition will be consist with the list of added values.
-            yield PUSH, dotted_node, addition
-
-        if deletion:
-            # for deletions, returns the list of removed items
-            yield PULL, dotted_node, deletion
-
     def diff_otherwise():
         """Compares string and integer types. Yields `change` flag."""
         if first != second:
             yield CHANGE, dotted_node, (first, second)
 
     differs = {
-        dict: diff_dict,
-        list: diff_list
+        dict: diff_dict_list,
+        list: diff_dict_list,
     }
 
     differ = differs.get(type(first))
@@ -77,23 +73,22 @@ def diff(first, second, node=None):
 def patch(diff_result, destination):
     """
     Patches the diff result to the old dictionary.
-
-        >>> patch([('push', 'numbers', [2, 3])], {'numbers': []})
-        {'numbers': [2, 3]}
-
-        >>> patch([('pull', 'numbers', [1])], {'numbers': [1, 2, 3]})
-        {'numbers': [2, 3]}
-
     """
     destination = copy.deepcopy(destination)
 
     def add(node, changes):
         for key, value in changes:
-            dot_lookup(destination, node)[key] = value
+            dest = dot_lookup(destination, node)
+            if isinstance(dest, list):
+                dest.insert(key, value)
+            else:
+                dest[key] = value
 
     def change(node, changes):
         dest = dot_lookup(destination, node, parent=True)
         last_node = node.split('.')[-1]
+        if isinstance(dest, list):
+            last_node = int(last_node)
         _, value = changes
         dest[last_node] = value
 
@@ -101,19 +96,7 @@ def patch(diff_result, destination):
         for key, _ in changes:
             del dot_lookup(destination, node)[key]
 
-    def pull(node, changes):
-        dest = dot_lookup(destination, node)
-        for val in changes:
-            dest.remove(val)
-
-    def push(node, changes):
-        dest = dot_lookup(destination, node)
-        for val in changes:
-            dest.append(val)
-
     patchers = {
-        PUSH: push,
-        PULL: pull,
         REMOVE: remove,
         ADD: add,
         CHANGE: change
@@ -146,12 +129,6 @@ def swap(diff_result):
 
     """
 
-    def push(node, changes):
-        return PULL, node, changes
-
-    def pull(node, changes):
-        return PUSH, node, changes
-
     def add(node, changes):
         return REMOVE, node, changes
 
@@ -163,8 +140,6 @@ def swap(diff_result):
         return CHANGE, node, (second, first)
 
     swappers = {
-        PUSH: push,
-        PULL: pull,
         REMOVE: remove,
         ADD: add,
         CHANGE: change
@@ -202,7 +177,7 @@ def dot_lookup(source, lookup, parent=False):
         >>> dot_lookup({'a': {'b': 'hello'}}, 'a.b', parent=True)
         {'b': 'hello'}
 
-    If node is empy value, returns the whole dictionary object.
+    If node is empty value, returns the whole dictionary object.
 
         >>> dot_lookup({'a': {'b': 'hello'}}, '')
         {'a': {'b': 'hello'}}
@@ -218,5 +193,7 @@ def dot_lookup(source, lookup, parent=False):
         keys = keys[:-1]
 
     for key in keys:
+        if isinstance(value, list):
+            key = int(key)
         value = value[key]
     return value
