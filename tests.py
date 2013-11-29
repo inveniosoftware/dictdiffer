@@ -27,23 +27,33 @@ class DictDifferTests(unittest.TestCase):
         diffed = next(diff(first, second))
         assert ('change', 'a', (None, 'c')) == diffed
 
+        first = {'a': 'c'}
+        second = {'a': None}
+        diffed = next(diff(first, second))
+        assert ('change', 'a', ('c', None)) == diffed
+
+        first = {'a': 'c'}
+        second = {'a': u'c'}
+        diffed = list(diff(first, second))
+        assert [] == diffed
+
     def test_nodes(self):
         first = {'a': {'b': {'c': 'd'}}}
         second = {'a': {'b': {'c': 'd', 'e': 'f'}}}
         diffed = next(diff(first, second))
         assert ('add', 'a.b', [('e', 'f')]) == diffed
 
-    def test_push(self):
+    def test_add_list(self):
         first = {'a': []}
         second = {'a': ['b']}
         diffed = next(diff(first, second))
-        assert ('push', 'a', ['b']) == diffed
+        assert ('add', 'a', [(0, 'b')]) == diffed
 
-    def test_pull(self):
+    def test_remove_list(self):
         first = {'a': ['b']}
         second = {'a': []}
         diffed = next(diff(first, second))
-        assert ('pull', 'a', ['b']) == diffed
+        assert ('remove', 'a', [(0, 'b')]) == diffed
 
 
 class DiffPatcherTests(unittest.TestCase):
@@ -80,22 +90,38 @@ class DiffPatcherTests(unittest.TestCase):
         assert second == patch(
             [('remove', '', [('a', 'b')])], first)
 
-    def test_pull(self):
+    def test_remove_list(self):
         first = {'a': [1, 2, 3]}
         second = {'a': [1, 2]}
         assert second == patch(
-            [('pull', 'a', [3])], first)
+            [('remove', 'a', [(2, 3)])], first)
 
-    def test_push(self):
+    def test_add_list(self):
         first = {'a': [1]}
         second = {'a': [1, 2]}
         assert second == patch(
-            [('push', 'a', [2])], first)
+            [('add', 'a', [(1, 2)])], first)
 
         first = {'a': {'b': [1]}}
         second = {'a': {'b': [1, 2]}}
         assert second == patch(
-            [('push', 'a.b', [2])], first)
+            [('add', 'a.b', [(1, 2)])], first)
+
+    def test_change_list(self):
+        first = {'a': ['b']}
+        second = {'a': ['c']}
+        assert second == patch(
+            [('change', 'a.0', ('b', 'c'))], first)
+
+        first = {'a': {'b': {'c': ['d']}}}
+        second = {'a': {'b': {'c': ['e']}}}
+        assert second == patch(
+            [('change', 'a.b.c.0', ('d', 'e'))], first)
+
+        first = {'a': {'b': {'c': [{'d': 'e'}]}}}
+        second = {'a': {'b': {'c': [{'d': 'f'}]}}}
+        assert second == patch(
+            [('change', 'a.b.c.0.d', ('e', 'f'))], first)
 
 
 class SwapperTests(unittest.TestCase):
@@ -111,15 +137,6 @@ class SwapperTests(unittest.TestCase):
     def test_changes(self):
         result = 'change', '', ('a', 'b')
         swapped = 'change', '', ('b', 'a')
-        assert next(swap([result])) == swapped
-
-    def test_lists(self):
-        result = 'pull', '', [1, 2]
-        swapped = 'push', '', [1, 2]
-        assert next(swap([result])) == swapped
-
-        result = 'push', '', [1, 2]
-        swapped = 'pull', '', [1, 2]
         assert next(swap([result])) == swapped
 
     def test_revert(self):
