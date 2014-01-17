@@ -16,12 +16,12 @@ def diff(first, second, node=None):
     node = node or []
     dotted_node = '.'.join(node)
 
-    if isinstance(first, dict):
+    if isinstance(first, dict) and isinstance(second, dict):
         # dictionaries are not hashable, we can't use sets
         intersection = [k for k in first if k in second]
         addition = [k for k in second if not k in first]
         deletion = [k for k in first if not k in second]
-    elif isinstance(first, list):
+    elif isinstance(first, list) and isinstance(second, list):
         len_first = len(first)
         len_second = len(second)
 
@@ -67,7 +67,7 @@ def diff(first, second, node=None):
     }
 
     differ = differs.get(type(first))
-    return (differ or diff_otherwise)()
+    return ((isinstance(second, type(first)) and differ) or diff_otherwise)()
 
 
 def patch(diff_result, destination):

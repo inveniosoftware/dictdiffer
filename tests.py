@@ -55,6 +55,12 @@ class DictDifferTests(unittest.TestCase):
         diffed = next(diff(first, second))
         assert ('remove', 'a', [(1, 'c'), (0, 'b'), ]) == diffed
 
+    def test_types(self):
+        first = {'a': ['a']}
+        second = {'a': 'a'}
+        diffed = next(diff(first, second))
+        assert ('change', 'a', (['a'], 'a')) == diffed
+
 
 class DiffPatcherTests(unittest.TestCase):
     def test_addition(self):
