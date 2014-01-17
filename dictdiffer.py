@@ -27,7 +27,7 @@ def diff(first, second, node=None):
 
         intersection = range(0, min(len_first, len_second))
         addition = range(min(len_first, len_second), len_second)
-        deletion = range(min(len_first, len_second), len_first)
+        deletion = reversed(range(min(len_first, len_second), len_first))
 
     def diff_dict_list():
         """Compares if object is a dictionary. Callees again the parent
