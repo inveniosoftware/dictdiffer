@@ -4,13 +4,18 @@ python:
   - "2.6"
   - "2.7"
   - "3.3"
+  - "3.4"
 
 install:
   - pip install --upgrade pip  --use-mirrors
+  - pip install coveralls --use-mirrors
   - pip install .
 
 script:
-  - python tests.py
+  - coverage run --source=dictdiffer tests.py
+
+after_success:
+  - coveralls
 
 notifications:
   email: false
