@@ -1,7 +1,7 @@
 from distutils.core import setup
 
 setup(name='dictdiffer',
-      version='0.0.3',
+      version='0.0.5.dev0',
       description='Dictdiffer is a helper module that helps you '
                   'to diff and patch dictionaries',
       author='Fatih Erikli',
