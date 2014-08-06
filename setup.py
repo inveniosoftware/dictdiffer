@@ -6,7 +6,7 @@ setup(
     description='Dictdiffer is a helper module that helps you '
                 'to diff and patch dictionaries',
     author='Fatih Erikli',
-    author_email='fatiherikli@gmail.com',
-    url='https://github.com/fatiherikli/dictdiffer',
+    author_email='info@invenio-software.org',
+    url='https://github.com/inveniosoftware/dictdiffer',
     py_modules=['dictdiffer'],
 )
