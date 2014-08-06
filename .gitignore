@@ -2,3 +2,6 @@
 .coverage
 htmlcov
 .DS_Store
+*.egg-info
+.tox
+MANIFEST
