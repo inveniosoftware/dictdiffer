@@ -1,4 +1,10 @@
+import sys
 import copy
+
+if sys.version_info[0] == 3:  # pragma: no cover (Python 2/3 specific code)
+    string_types = str,
+else:  # pragma: no cover (Python 2/3 specific code)
+    string_types = basestring,
 
 (ADD, REMOVE, CHANGE) = (
     'add', 'remove', 'change')
@@ -14,7 +20,10 @@ def diff(first, second, node=None):
 
     """
     node = node or []
-    dotted_node = '.'.join(node)
+    if all(map(lambda x: isinstance(x, string_types), node)):
+        dotted_node = '.'.join(node)
+    else:
+        dotted_node = list(node)
 
     if isinstance(first, dict) and isinstance(second, dict):
         # dictionaries are not hashable, we can't use sets
@@ -36,10 +45,14 @@ def diff(first, second, node=None):
         for key in intersection:
             # if type is not changed, callees again diff function to compare.
             # otherwise, the change will be handled as `change` flag.
+            node_key = str(key) if all(
+                [isinstance(key, int), isinstance(first[key], list),
+                 isinstance(second[key], list)]
+            ) else key
             recurred = diff(
                 first[key],
                 second[key],
-                node=node + [str(key) if isinstance(key, int) else key])
+                node=node + [node_key])
 
             for diffed in recurred:
                 yield diffed
@@ -86,7 +99,10 @@ def patch(diff_result, destination):
 
     def change(node, changes):
         dest = dot_lookup(destination, node, parent=True)
-        last_node = node.split('.')[-1]
+        if isinstance(node, string_types):
+            last_node = node.split('.')[-1]
+        else:
+            last_node = node[-1]
         if isinstance(dest, list):
             last_node = int(last_node)
         _, value = changes
@@ -183,11 +199,16 @@ def dot_lookup(source, lookup, parent=False):
         {'a': {'b': 'hello'}}
 
     """
-    if not lookup:
+    if lookup is None or lookup == '' or lookup == []:
         return source
 
     value = source
-    keys = lookup.split('.')
+    if isinstance(lookup, string_types):
+        keys = lookup.split('.')
+    elif isinstance(lookup, list):
+        keys = lookup
+    else:
+        raise TypeError('lookup must be string or list')
 
     if parent:
         keys = keys[:-1]

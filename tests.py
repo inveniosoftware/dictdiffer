@@ -1,6 +1,6 @@
 import unittest
 
-from dictdiffer import diff, patch, revert, swap
+from dictdiffer import diff, patch, revert, swap, dot_lookup
 
 
 class DictDifferTests(unittest.TestCase):
@@ -140,6 +140,7 @@ class DiffPatcherTests(unittest.TestCase):
         second = {0: {'1': {2: '3'}}}
         first_patch = [('change', [0, '1', 2], (3, '3'))]
         assert second == patch(first_patch, first)
+        assert first_patch[0] == list(diff(first, second))[0]
 
 
 class SwapperTests(unittest.TestCase):
@@ -166,6 +167,16 @@ class SwapperTests(unittest.TestCase):
         diffed = diff(first, second)
         reverted = revert(diffed, second)
         assert reverted == first
+
+
+class DotLookupTest(unittest.TestCase):
+    def test_list_lookup(self):
+        source = {0: '0'}
+        assert dot_lookup(source, [0]) == '0'
+
+    def test_invalit_lookup_type(self):
+        self.assertRaises(TypeError, dot_lookup, {0: '0'}, 0)
+
 
 if __name__ == "__main__":
     unittest.main()
