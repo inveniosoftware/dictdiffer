@@ -129,6 +129,18 @@ class DiffPatcherTests(unittest.TestCase):
         assert second == patch(
             [('change', 'a.b.c.0.d', ('e', 'f'))], first)
 
+    def test_dict_int_key(self):
+        first = {0: 0}
+        second = {0: 'a'}
+        first_patch = [('change', [0], (0, 'a'))]
+        assert second == patch(first_patch, first)
+
+    def test_dict_combined_key_type(self):
+        first = {0: {'1': {2: 3}}}
+        second = {0: {'1': {2: '3'}}}
+        first_patch = [('change', [0, '1', 2], (3, '3'))]
+        assert second == patch(first_patch, first)
+
 
 class SwapperTests(unittest.TestCase):
     def test_addition(self):
