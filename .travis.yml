@@ -8,11 +8,11 @@ python:
 
 install:
   - pip install --upgrade pip  --use-mirrors
-  - pip install coveralls --use-mirrors
+  - pip install coveralls pytest pytest-cov pytest-pep8 --use-mirrors
   - pip install .
 
 script:
-  - coverage run --source=dictdiffer tests.py
+  - py.test --clearcache --pep8 --doctest-modules --cov=dictdiffer.py dictdiffer.py tests.py
 
 after_success:
   - coveralls
