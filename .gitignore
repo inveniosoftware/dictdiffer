@@ -1,7 +1,8 @@
-*.pyc
-.coverage
-htmlcov
-.DS_Store
 *.egg-info
+*.pyc
+.DS_Store
+.cache
+.coverage
 .tox
 MANIFEST
+htmlcov
