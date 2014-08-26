@@ -83,7 +83,8 @@ class DictDifferTests(unittest.TestCase):
             'n': 10,
             'date_str': u'2013-07-08 00:00:00',
             'float_here': 0.454545,
-            'complex': [{'id': 83865,
+            'complex': [{
+                'id': 83865,
                 'goal': Decimal('2.000000'),
                 'state': u'active'}],
             'profile_id': None,
@@ -103,7 +104,8 @@ class DictDifferTests(unittest.TestCase):
             'n': 10,
             'date_str': u'2013-07-08 00:00:00',
             'float_here': 0.454545,
-            'complex': [{'id': 83865,
+            'complex': [{
+                'id': 83865,
                 'goal': Decimal('2.000000'),
                 'state': u'active'}],
             'profile_id': None,
