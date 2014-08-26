@@ -61,6 +61,57 @@ class DictDifferTests(unittest.TestCase):
         diffed = next(diff(first, second))
         assert ('change', 'a', (['a'], 'a')) == diffed
 
+    def test_complex_diff(self):
+        """Check regression on issue #4."""
+        from decimal import Decimal
+
+        d1 = {
+            'id': 1,
+            'code': None,
+            'type': u'foo',
+            'bars': [
+                {'id': 6934900},
+                {'id': 6934977},
+                {'id': 6934992},
+                {'id': 6934993},
+                {'id': 6935014}],
+            'n': 10,
+            'date_str': u'2013-07-08 00:00:00',
+            'float_here': 0.454545,
+            'complex': [{'id': 83865,
+                'goal': Decimal('2.000000'),
+                'state': u'active'}],
+            'profile_id': None,
+            'state': u'active'
+        }
+
+        d2 = {
+            'id': u'2',
+            'code': None,
+            'type': u'foo',
+            'bars': [
+                {'id': 6934900},
+                {'id': 6934977},
+                {'id': 6934992},
+                {'id': 6934993},
+                {'id': 6935014}],
+            'n': 10,
+            'date_str': u'2013-07-08 00:00:00',
+            'float_here': 0.454545,
+            'complex': [{'id': 83865,
+                'goal': Decimal('2.000000'),
+                'state': u'active'}],
+            'profile_id': None,
+            'state': u'active'
+        }
+
+        assert len(list(diff(d1, {}))) > 0
+        assert d1['id'] == 1
+        assert d2['id'] == u'2'
+        assert d1 is not d2
+        assert d1 != d2
+        assert len(list(diff(d1, d2))) > 0
+
 
 class DiffPatcherTests(unittest.TestCase):
     def test_addition(self):
