@@ -1,3 +1,5 @@
+"""Dictdiffer is a helper module to diff and patch dictionaries."""
+
 import sys
 import copy
 
@@ -11,8 +13,9 @@ else:  # pragma: no cover (Python 2/3 specific code)
 
 
 def diff(first, second, node=None):
-    """
-    Compares two dictionary object, and returns a diff result.
+    """Compare two dictionary object, and returns a diff result.
+
+    Return iterator with differences between two dictionaries.
 
         >>> result = diff({'a':'b'}, {'a':'c'})
         >>> list(result)
@@ -39,9 +42,11 @@ def diff(first, second, node=None):
         deletion = reversed(range(min(len_first, len_second), len_first))
 
     def diff_dict_list():
-        """Compares if object is a dictionary. Callees again the parent
-        function as recursive if dictionary have child objects.
-        Yields `add` and `remove` flags."""
+        """Compare if object is a dictionary.
+
+        Call again the parent function as recursive if dictionary have child
+        objects.  Yields `add` and `remove` flags.
+        """
         for key in intersection:
             # if type is not changed, callees again diff function to compare.
             # otherwise, the change will be handled as `change` flag.
@@ -70,7 +75,7 @@ def diff(first, second, node=None):
                 (key, first[key]) for key in deletion]
 
     def diff_otherwise():
-        """Compares string and integer types. Yields `change` flag."""
+        """Compare string and integer types and yield `change` flag."""
         if first != second:
             yield CHANGE, dotted_node, (first, second)
 
@@ -84,9 +89,7 @@ def diff(first, second, node=None):
 
 
 def patch(diff_result, destination):
-    """
-    Patches the diff result to the old dictionary.
-    """
+    """Patche the diff result to the old dictionary."""
     destination = copy.deepcopy(destination)
 
     def add(node, changes):
@@ -125,15 +128,16 @@ def patch(diff_result, destination):
 
 
 def swap(diff_result):
-    """
-    Swaps the diff result with the following mapping
+    """Swap the diff result.
 
-        pull -> push
-        push -> pull
-        remove -> add
-        add -> remove
+    It uses following mapping:
 
-    In addition, swaps the changed values for `change` flag.
+    - pull -> push
+    - push -> pull
+    - remove -> add
+    - add -> remove
+
+    In addition, swap the changed values for `change` flag.
 
         >>> swapped = swap([('add', 'a.b.c', ('a', 'b'))])
         >>> next(swapped)
@@ -144,7 +148,6 @@ def swap(diff_result):
         ('change', 'a.b.c', ('b', 'a'))
 
     """
-
     def add(node, changes):
         return REMOVE, node, changes
 
@@ -166,9 +169,9 @@ def swap(diff_result):
 
 
 def revert(diff_result, destination):
-    """
-    A helper function that calles swap function to revert
-    patched dictionary object.
+    """Call swap function to revert patched dictionary object.
+
+    Usage example:
 
         >>> first = {'a': 'b'}
         >>> second = {'a': 'c'}
@@ -180,9 +183,9 @@ def revert(diff_result, destination):
 
 
 def dot_lookup(source, lookup, parent=False):
-    """
-    A helper function that allows you to reach dictionary
-    items with dot lookup (e.g. document.properties.settings)
+    """Allow you to reach dictionary items with string or list lookup.
+
+    Recursively find value by lookup key split by '.'.
 
         >>> dot_lookup({'a': {'b': 'hello'}}, 'a.b')
         'hello'

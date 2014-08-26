@@ -9,4 +9,7 @@ setup(
     author_email='info@invenio-software.org',
     url='https://github.com/inveniosoftware/dictdiffer',
     py_modules=['dictdiffer'],
+    extras_require={
+        "docs": ["sphinx_rtd_theme"],
+    },
 )

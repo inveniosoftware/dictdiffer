@@ -5,4 +5,7 @@
 .coverage
 .tox
 MANIFEST
+docs/_build
+docs/db
+docs/static
 htmlcov
