@@ -110,7 +110,7 @@ operating correctly.
 
 .. code-block:: console
 
-    $ py.test -q --clearcache --pep8 --doctest-modules --cov=dictdiffer.py dictdiffer.py tests.py
+    $ ./run_tests.sh
     ...
     Name         Stmts   Miss  Cover
     --------------------------------

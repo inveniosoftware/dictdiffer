@@ -8,11 +8,13 @@ python:
 
 install:
   - pip install --upgrade pip  --use-mirrors
-  - pip install coveralls pytest pytest-cov pytest-pep8 pep257 --use-mirrors
+  - pip install coveralls pep257 --use-mirrors
   - pip install -e .[docs]
 
 script:
-  - sh run_tests.sh
+  - pep257 dictdiffer.py
+  - "sphinx-build -qnNW docs docs/_build/html"
+  - python setup.py test
 
 after_success:
   - coveralls
