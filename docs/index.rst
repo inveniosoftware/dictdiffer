@@ -110,7 +110,7 @@ operating correctly.
 
 .. code-block:: console
 
-    $ ./run_tests.sh
+    $ ./run-tests.sh
     ...
     Name         Stmts   Miss  Cover
     --------------------------------
@@ -133,4 +133,3 @@ Indices and tables
 * :ref:`genindex`
 * :ref:`modindex`
 * :ref:`search`
-
