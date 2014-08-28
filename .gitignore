@@ -1,10 +1,11 @@
+*.egg
 *.egg-info
 *.pyc
 .DS_Store
 .cache
 .coverage
 .tox
-MANIFEST
+build/
 docs/_build
 docs/db
 docs/static
