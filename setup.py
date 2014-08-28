@@ -1,3 +1,12 @@
+# This file is part of Dictdiffer.
+#
+# Copyright (C) 2013 Fatih Erikli.
+# Copyright (C) 2014 CERN.
+#
+# Dictdiffer is free software; you can redistribute it and/or modify
+# it under the terms of the MIT License; see LICENSE file for more
+# details.
+
 import sys
 from setuptools import setup
 from setuptools.command.test import test as TestCommand
