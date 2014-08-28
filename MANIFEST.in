@@ -1,0 +1,11 @@
+# This file is part of Dictdiffer.
+# Copyright (C) 2014 CERN.
+#
+# Dictdiffer is free software; you can redistribute it and/or modify
+# it under the terms of the MIT/X11 License; see LICENSE file for more
+# details.
+
+include README.rst CHANGES LICENSE MANIFEST.in
+include .coveragerc pytest.ini
+include docs/*.rst docs/*.py docs/Makefile
+include *.py *.sh
