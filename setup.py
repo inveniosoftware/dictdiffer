@@ -43,11 +43,11 @@ tests_require = [
 ]
 
 setup(
-    name='dictdiffer',
+    name='Dictdiffer',
     version='0.0.5.dev0',
     description='Dictdiffer is a helper module that helps you '
                 'to diff and patch dictionaries',
-    author='Fatih Erikli',
+    author='Invenio Collaboration',
     author_email='info@invenio-software.org',
     url='https://github.com/inveniosoftware/dictdiffer',
     py_modules=['dictdiffer'],
@@ -57,4 +57,17 @@ setup(
     install_requires=tests_require,
     tests_require=tests_require,
     cmdclass={'test': PyTest},
+    classifiers=[
+        'Programming Language :: Python :: 2',
+        'Programming Language :: Python :: 2.6',
+        'Programming Language :: Python :: 2.7',
+        'Programming Language :: Python :: 3',
+        'Programming Language :: Python :: 3.3',
+        'Programming Language :: Python :: 3.4',
+        'Development Status :: 5 - Production/Stable',
+        'Intended Audience :: Developers',
+        'License :: OSI Approved :: MIT License',
+        'Operating System :: OS Independent',
+        'Topic :: Utilities',
+    ],
 )
