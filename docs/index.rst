@@ -1,18 +1,23 @@
-==========
-Dictdiffer
-==========
+============
+ Dictdiffer
+============
 .. currentmodule:: dictdiffer
+
+.. raw:: html
+
+    <p style="height:22px; margin:0 0 0 2em; float:right">
+        <a href="https://travis-ci.org/inveniosoftware/dictdiffer">
+            <img src="https://travis-ci.org/inveniosoftware/dictdiffer.png?branch=master"
+                 alt="travis-ci badge"/>
+        </a>
+        <a href="https://coveralls.io/r/inveniosoftware/dictdiffer">
+            <img src="https://coveralls.io/repos/inveniosoftware/dictdiffer/badge.png?branch=master"
+                 alt="coveralls.io badge"/>
+        </a>
+    </p>
 
 Dictdiffer is a helper module that helps you to diff and patch
 dictionaries.
-
-Contents
---------
-
-.. contents::
-   :local:
-   :backlinks: none
-
 
 Installation
 ============
@@ -24,11 +29,11 @@ Dictdiffer is on PyPI so all you need is:
     $ pip install dictdiffer
 
 
-Examples
-========
+Usage
+=====
 
-Let's start with finding the diff of two dictionaries using :func:`.diff`
-method.
+Let's start with an example on how to find the diff between two
+dictionaries using :func:`.diff` method:
 
 .. code-block:: python
 
@@ -61,7 +66,7 @@ method.
         ('change', 'title', ('hello', 'hellooo'))]
 
 
-Now we can apply the diff result with :func:`.patch` method.
+Now we can apply the diff result with :func:`.patch` method:
 
 .. code-block:: python
 
@@ -71,7 +76,7 @@ Now we can apply the diff result with :func:`.patch` method.
     assert patched == second
 
 
-Also we can swap the diff result with :func:`.swap` method.
+Also we can swap the diff result with :func:`.swap` method:
 
 .. code-block:: python
 
@@ -85,7 +90,7 @@ Also we can swap the diff result with :func:`.swap` method.
         ('change', 'title', ('hellooo', 'hello'))]
 
 
-Let's revert the last changes.
+Let's revert the last changes:
 
 .. code-block:: python
 
@@ -93,43 +98,47 @@ Let's revert the last changes.
     assert reverted == first
 
 
-Contribution & Tests
-====================
-
-Bug reports, feature requests, or other contributions are welcome.
-If you find a demonstrable problem that is caused by the code of this
-library please:
-
-1. Search for already reported problem using GitHub issue search.
-2. Check if the issue has been fixed or is still reproducable on the
-   latest `master` branch.
-3. Create an issue with **a test case**.
-
-After your changes, you could run the tests to ensure everything is
-operating correctly.
-
-.. code-block:: console
-
-    $ ./run-tests.sh
-    ...
-    Name         Stmts   Miss  Cover
-    --------------------------------
-    dictdiffer      87      0   100%
-    ...
-
 API
 ===
-
-This documentation is automatically generated from Dictdiffer's source
-code.
 
 .. automodule:: dictdiffer
    :members:
 
+.. include:: ../CHANGES
 
-Indices and tables
-==================
+Contributing
+============
 
-* :ref:`genindex`
-* :ref:`modindex`
-* :ref:`search`
+Bug reports, feature requests, and other contributions are welcome.
+If you find a demonstrable problem that is caused by the code of this
+library, please:
+
+1. Search for `already reported problems
+   <https://github.com/inveniosoftware/dictdiffer/issues>`_.
+2. Check if the issue has been fixed or is still reproducible on the
+   latest `master` branch.
+3. Create an issue with **a test case**.
+
+If you create a feature branch, you can run the tests to ensure everything is
+operating correctly:
+
+.. code-block:: console
+
+    $ ./run-tests.sh
+
+    ...
+
+    Name         Stmts   Miss  Cover
+    --------------------------------
+    dictdiffer      87      0   100%
+
+    ...
+
+    52 passed, 2 skipped in 0.44 seconds
+
+License
+=======
+
+.. include:: ../LICENSE
+
+.. include:: ../AUTHORS

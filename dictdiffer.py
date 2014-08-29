@@ -98,7 +98,7 @@ def diff(first, second, node=None):
 
 
 def patch(diff_result, destination):
-    """Patche the diff result to the old dictionary."""
+    """Patch the diff result to the old dictionary."""
     destination = copy.deepcopy(destination)
 
     def add(node, changes):
