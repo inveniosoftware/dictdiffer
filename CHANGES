@@ -1,10 +1,24 @@
 Changes
 =======
 
-Version 0.4.0 (released 2014-01-04)
+Version 0.1.0 (released 2014-09-01):
 
-- FIXME.
+- Fix for list removal issues during patching caused by wrong
+  iteration. (#10)
+- Fix for issues with multiple value types for the same key. (#10)
+- Fix for issues with strings handled as iterables. (#6)
+- Fix for integer keys. (#12)
+- Regression test for complex dictionaries. (#4)
+- Better testing with Travis CI, tox, pytest, code coverage. (#10)
+- Initial release of documentation on ReadTheDocs. (#21 #24)
+- Support for Python 3. (#15)
 
-Version 0.3.0 (released 2013-05-26)
+Version 0.0.4 (released 2014-01-04):
+
+- List diff behavior treats lists as lists instead of sets. (#3)
+- Differed typed objects are flagged as `changed` now.
+- Swap function refactored.
+
+Version 0.0.3 (released 2013-05-26):
 
 - Initial public release on PyPI.

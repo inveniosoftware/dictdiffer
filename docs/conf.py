@@ -77,6 +77,7 @@ copyright = u'2014, Fatih Erikli'
 # built documents.
 #
 # The short X.Y version.
+
 with open(os.path.join('..', 'dictdiffer', 'version.py'), 'rt') as f:
     version = re.search(
         '__version__\s*=\s*"(?P<version>.*)"\n',
