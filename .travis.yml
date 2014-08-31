@@ -17,6 +17,7 @@ python:
 install:
   - pip install --upgrade pip  --use-mirrors
   - pip install coveralls pep257 --use-mirrors
+  - pip install pytest pytest-pep8 pytest-cov pytest-cache --use-mirrors
   - pip install -e .[docs]
 
 script:

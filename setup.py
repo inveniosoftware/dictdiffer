@@ -39,7 +39,11 @@ class PyTest(TestCommand):
 
 
 tests_require = [
-    'pytest', 'pytest-cache', 'pytest-cov', 'pytest-pep8', 'coverage'
+    'pytest-cache>=1.0',
+    'pytest-cov>=1.8.0',
+    'pytest-pep8>=1.0.6',
+    'pytest>=2.6.1',
+    'coverage'
 ]
 
 setup(
@@ -52,9 +56,8 @@ setup(
     url='https://github.com/inveniosoftware/dictdiffer',
     py_modules=['dictdiffer'],
     extras_require={
-        "docs": ["sphinx_rtd_theme"] + tests_require,
+        "docs": ["sphinx_rtd_theme"],
     },
-    install_requires=tests_require,
     tests_require=tests_require,
     cmdclass={'test': PyTest},
     classifiers=[
