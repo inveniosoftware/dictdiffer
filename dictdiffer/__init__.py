@@ -141,8 +141,6 @@ def swap(diff_result):
 
     It uses following mapping:
 
-    - pull -> push
-    - push -> pull
     - remove -> add
     - add -> remove
 
