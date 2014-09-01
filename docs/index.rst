@@ -60,9 +60,10 @@ dictionaries using :func:`.diff` method:
     result = diff(first, second)
 
     assert list(result) == [
-        ('push', 'settings.assignees', [202]),
-        ('pull', 'settings.assignees', [201]),
-        ('push', 'stargazers', ['/users/40']),
+        ('change', ['settings', 'assignees', 2], (201, 202)),
+        ('remove', 'settings.assignees', []),
+        ('add', 'stargazers', [(2, '/users/40')]),
+        ('remove', 'stargazers', []),
         ('change', 'title', ('hello', 'hellooo'))]
 
 
@@ -84,9 +85,10 @@ Also we can swap the diff result with :func:`.swap` method:
     swapped = swap(result)
 
     assert list(swapped) == [
-        ('pull', 'settings.assignees', [202]),
-        ('push', 'settings.assignees', [201]),
-        ('pull', 'stargazers', ['/users/40']),
+        ('change', ['settings', 'assignees', 2], (202, 201)),
+        ('add', 'settings.assignees', []),
+        ('remove', 'stargazers', [(2, '/users/40')]),
+        ('add', 'stargazers', []),
         ('change', 'title', ('hellooo', 'hello'))]
 
 
