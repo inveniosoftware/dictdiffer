@@ -20,9 +20,12 @@ operating correctly:
 
     ...
 
-    Name         Stmts   Miss  Cover
-    --------------------------------
-    dictdiffer      87      0   100%
+    Name                  Stmts   Miss  Cover   Missing
+    ---------------------------------------------------
+    dictdiffer/__init__      88      0   100%
+    dictdiffer/version        2      0   100%
+    ---------------------------------------------------
+    TOTAL                    90      0   100%
 
     ...
 

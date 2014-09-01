@@ -21,7 +21,7 @@ install:
   - pip install -e .[docs]
 
 script:
-  - pep257 dictdiffer.py
+  - pep257 dictdiffer
   - "sphinx-build -qnNW docs docs/_build/html"
   - python setup.py test
 

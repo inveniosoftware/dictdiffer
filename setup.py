@@ -7,7 +7,10 @@
 # it under the terms of the MIT License; see LICENSE file for more
 # details.
 
+import os
+import re
 import sys
+
 from setuptools import setup
 from setuptools.command.test import test as TestCommand
 
@@ -37,6 +40,12 @@ class PyTest(TestCommand):
         errno = pytest.main(self.pytest_args)
         sys.exit(errno)
 
+# Get the version string.  Cannot be done with import!
+with open(os.path.join('dictdiffer', 'version.py'), 'rt') as f:
+    version = re.search(
+        '__version__\s*=\s*"(?P<version>.*)"\n',
+        f.read()
+    ).group('version')
 
 tests_require = [
     'pytest-cache>=1.0',
@@ -48,13 +57,14 @@ tests_require = [
 
 setup(
     name='Dictdiffer',
-    version='0.0.5.dev0',
+    version=version,
     description='Dictdiffer is a helper module that helps you '
                 'to diff and patch dictionaries',
     author='Invenio Collaboration',
     author_email='info@invenio-software.org',
     url='https://github.com/inveniosoftware/dictdiffer',
-    py_modules=['dictdiffer'],
+    packages=['dictdiffer'],
+    zip_safe=False,
     extras_require={
         "docs": ["sphinx_rtd_theme"],
     },

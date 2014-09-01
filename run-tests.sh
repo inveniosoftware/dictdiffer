@@ -9,6 +9,6 @@
 # it under the terms of the MIT License; see LICENSE file for more
 # details.
 
-pep257 dictdiffer.py
+pep257 dictdiffer
 sphinx-build -qnNW docs docs/_build/html
 python setup.py test
