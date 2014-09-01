@@ -128,6 +128,14 @@ class DictDifferTests(unittest.TestCase):
         assert d1 != d2
         assert len(list(diff(d1, d2))) > 0
 
+    def test_list_change(self):
+        """Produced diffs should not contain empty list instructions (#30)."""
+        first = {"a": {"b": [100, 101, 201]}}
+        second = {"a": {"b": [100, 101, 202]}}
+        result = list(diff(first, second))
+        assert len(result) == 1
+        assert result == [('change', ['a', 'b', 2], (201, 202))]
+
 
 class DiffPatcherTests(unittest.TestCase):
     def test_addition(self):
