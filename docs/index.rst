@@ -109,7 +109,7 @@ API
 
 .. include:: ../CHANGES
 
-.. include:: ../CONTRIBUTING
+.. include:: ../CONTRIBUTING.rst
 
 License
 =======
