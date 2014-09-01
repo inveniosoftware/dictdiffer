@@ -96,6 +96,7 @@ Let's revert the last changes:
 
 .. code-block:: python
 
+    result = diff(first, second)
     reverted = revert(result, patched)
     assert reverted == first
 
