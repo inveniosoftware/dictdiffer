@@ -20,6 +20,10 @@ else:  # pragma: no cover (Python 2/3 specific code)
 (ADD, REMOVE, CHANGE) = (
     'add', 'remove', 'change')
 
+from .version import __version__
+
+__all__ = ('diff', 'patch', 'swap', 'revert', 'dot_lookup', '__version__')
+
 
 def diff(first, second, node=None):
     """Compare two dictionary object, and returns a diff result.
