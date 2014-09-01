@@ -6,7 +6,7 @@
 # it under the terms of the MIT License; see LICENSE file for more
 # details.
 
-include README.rst CHANGES AUTHORS LICENSE MANIFEST.in
+include README.rst CHANGES CONTRIBUTING AUTHORS LICENSE MANIFEST.in
 include .coveragerc pytest.ini
 include docs/*.rst docs/*.py docs/Makefile
 include *.py *.sh
