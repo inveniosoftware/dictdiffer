@@ -63,7 +63,6 @@ dictionaries using :func:`.diff` method:
         ('change', ['settings', 'assignees', 2], (201, 202)),
         ('remove', 'settings.assignees', []),
         ('add', 'stargazers', [(2, '/users/40')]),
-        ('remove', 'stargazers', []),
         ('change', 'title', ('hello', 'hellooo'))]
 
 
@@ -88,7 +87,6 @@ Also we can swap the diff result with :func:`.swap` method:
         ('change', ['settings', 'assignees', 2], (202, 201)),
         ('add', 'settings.assignees', []),
         ('remove', 'stargazers', [(2, '/users/40')]),
-        ('add', 'stargazers', []),
         ('change', 'title', ('hellooo', 'hello'))]
 
 
