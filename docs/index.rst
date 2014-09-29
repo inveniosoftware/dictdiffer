@@ -61,7 +61,6 @@ dictionaries using :func:`.diff` method:
 
     assert list(result) == [
         ('change', ['settings', 'assignees', 2], (201, 202)),
-        ('remove', 'settings.assignees', []),
         ('add', 'stargazers', [(2, '/users/40')]),
         ('change', 'title', ('hello', 'hellooo'))]
 
@@ -85,7 +84,6 @@ Also we can swap the diff result with :func:`.swap` method:
 
     assert list(swapped) == [
         ('change', ['settings', 'assignees', 2], (202, 201)),
-        ('add', 'settings.assignees', []),
         ('remove', 'stargazers', [(2, '/users/40')]),
         ('change', 'title', ('hellooo', 'hello'))]
 
