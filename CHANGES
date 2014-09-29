@@ -1,6 +1,11 @@
 Changes
 =======
 
+Version 0.2.0 (released 2014-09-29):
+
+- Fix for empty list instructions. (#30)
+- Regression test for empty list instructions.
+
 Version 0.1.0 (released 2014-09-01):
 
 - Fix for list removal issues during patching caused by wrong

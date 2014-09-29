@@ -1,8 +1,8 @@
 ===============================
- Dictdiffer v0.1.0 is released
+ Dictdiffer v0.2.0 is released
 ===============================
 
-Dictdiffer v0.1.0 was released on September 1, 2014.
+Dictdiffer v0.2.0 was released on September 29, 2014.
 
 About
 -----
@@ -16,15 +16,8 @@ maintained by the Invenio collaboration.
 What's new
 ----------
 
-- Fix for list removal issues during patching caused by wrong
-  iteration. (#10)
-- Fix for issues with multiple value types for the same key. (#10)
-- Fix for issues with strings handled as iterables. (#6)
-- Fix for integer keys. (#12)
-- Regression test for complex dictionaries. (#4)
-- Better testing with Travis CI, tox, pytest, code coverage. (#10)
-- Initial release of documentation on ReadTheDocs. (#21 #24)
-- Support for Python 3. (#15)
+- Fix for empty list instructions. (#30)
+- Regression test for empty list instructions.
 
 Installation
 ------------
@@ -34,7 +27,7 @@ Installation
 Documentation
 -------------
 
-   http://dictdiffer.readthedocs.org/en/v0.1.0
+   http://dictdiffer.readthedocs.org/en/v0.2.0
 
 Good luck and thanks for using Dictdiffer.
 
