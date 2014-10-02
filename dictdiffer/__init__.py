@@ -34,6 +34,10 @@ def diff(first, second, node=None, ignore=None):
         >>> list(result)
         [('change', 'a', ('b', 'c'))]
 
+    :param first: original dictionary or list
+    :param second: new dictionary or list
+    :param node: key for comparison that can be used in :func:`dot_lookup`
+    :param ignore: list of keys that should not be checked
     """
     node = node or []
     if all(map(lambda x: isinstance(x, string_types), node)):
