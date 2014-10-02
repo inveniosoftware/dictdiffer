@@ -25,7 +25,7 @@ from .version import __version__
 __all__ = ('diff', 'patch', 'swap', 'revert', 'dot_lookup', '__version__')
 
 
-def diff(first, second, node=None):
+def diff(first, second, node=None, ignore=None):
     """Compare two dictionary object, and returns a diff result.
 
     Return iterator with differences between two dictionaries.
@@ -43,9 +43,16 @@ def diff(first, second, node=None):
 
     if isinstance(first, dict) and isinstance(second, dict):
         # dictionaries are not hashable, we can't use sets
-        intersection = [k for k in first if k in second]
-        addition = [k for k in second if k not in first]
-        deletion = [k for k in first if k not in second]
+        def check(key):
+            """Test if key in current node should be ignored."""
+            return ignore is None \
+                or (dotted_node + [key] if isinstance(dotted_node, list)
+                    else '.'.join(node + [str(key)])) not in ignore
+
+        intersection = [k for k in first if k in second and check(k)]
+        addition = [k for k in second if k not in first and check(k)]
+        deletion = [k for k in first if k not in second and check(k)]
+
     elif isinstance(first, list) and isinstance(second, list):
         len_first = len(first)
         len_second = len(second)
@@ -70,7 +77,8 @@ def diff(first, second, node=None):
             recurred = diff(
                 first[key],
                 second[key],
-                node=node + [node_key])
+                node=node + [node_key],
+                ignore=ignore)
 
             for diffed in recurred:
                 yield diffed

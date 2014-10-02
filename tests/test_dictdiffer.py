@@ -75,6 +75,38 @@ class DictDifferTests(unittest.TestCase):
         diffed = next(diff(first, second))
         assert ('change', 'a', (['a'], 'a')) == diffed
 
+    def test_ignore_key(self):
+        first = {'a': 'a', 'b': 'b', 'c': 'c'}
+        second = {'a': 'a', 'b': 2, 'c': 3}
+        diffed = next(diff(first, second, ignore=['b']))
+        assert ('change', 'c', ('c', 3)) == diffed
+
+    def test_ignore_dotted_key(self):
+        first = {'a': {'aa': 'A', 'ab': 'B', 'ac': 'C'}}
+        second = {'a': {'aa': 1, 'ab': 'B', 'ac': 3}}
+        diffed = next(diff(first, second, ignore=['a.aa']))
+        assert ('change', 'a.ac', ('C', 3)) == diffed
+
+    def test_ignore_complex_key(self):
+        first = {'a': {1: {'a': 'a', 'b': 'b'}}}
+        second = {'a': {1: {'a': 1, 'b': 2}}}
+        diffed = next(diff(first, second, ignore=[['a', 1, 'a']]))
+        assert ('change', ['a', 1, 'b'], ('b', 2)) == diffed
+
+    def test_ignore_missing_keys(self):
+        first = {'a': 'a'}
+        second = {'a': 'a', 'b': 'b'}
+        assert len(list(diff(first, second, ignore=['b']))) == 0
+        assert len(list(diff(second, first, ignore=['b']))) == 0
+
+    def test_ignore_missing_complex_keys(self):
+        first = {'a': {1: {'a': 'a', 'b': 'b'}}}
+        second = {'a': {1: {'a': 1}}}
+        diffed = next(diff(first, second, ignore=[['a', 1, 'b']]))
+        assert ('change', ['a', 1, 'a'], ('a', 1)) == diffed
+        diffed = next(diff(second, first, ignore=[['a', 1, 'b']]))
+        assert ('change', ['a', 1, 'a'], (1, 'a')) == diffed
+
     def test_complex_diff(self):
         """Check regression on issue #4."""
         from decimal import Decimal
