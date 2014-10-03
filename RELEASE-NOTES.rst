@@ -1,8 +1,8 @@
 ===============================
- Dictdiffer v0.2.0 is released
+ Dictdiffer v0.3.0 is released
 ===============================
 
-Dictdiffer v0.2.0 was released on September 29, 2014.
+Dictdiffer v0.3.0 was released on November 5, 2014.
 
 About
 -----
@@ -13,8 +13,10 @@ dictionaries.
 What's new
 ----------
 
-- Fix for empty list instructions. (#30)
-- Regression test for empty list instructions.
+- Adds ignore argument to `diff` function that allows skipping check
+  on specified keys. (#34 #35)
+- Fix for diffing of dict or list subclasses. (#37)
+- Better instance checking of diffing objects. (#39)
 
 Installation
 ------------
@@ -24,7 +26,7 @@ Installation
 Documentation
 -------------
 
-   http://dictdiffer.readthedocs.org/en/v0.2.0
+   http://dictdiffer.readthedocs.org/en/v0.3.0
 
 Good luck and thanks for using Dictdiffer.
 
