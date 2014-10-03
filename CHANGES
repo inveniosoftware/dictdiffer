@@ -1,6 +1,13 @@
 Changes
 =======
 
+Version 0.3.0 (released 2014-11-05):
+
+- Adds ignore argument to `diff` function that allows skipping check on
+  specified keys. (#34 #35)
+- Fix for diffing of dict or list subclasses. (#37)
+- Better instance checking of diffing objects. (#39)
+
 Version 0.2.0 (released 2014-09-29):
 
 - Fix for empty list instructions. (#30)
