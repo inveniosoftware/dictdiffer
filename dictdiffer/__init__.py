@@ -77,14 +77,10 @@ def diff(first, second, node=None, ignore=None):
         for key in intersection:
             # if type is not changed, callees again diff function to compare.
             # otherwise, the change will be handled as `change` flag.
-            node_key = str(key) if all(
-                [isinstance(key, int), isinstance(first[key], list),
-                 isinstance(second[key], list)]
-            ) else key
             recurred = diff(
                 first[key],
                 second[key],
-                node=node + [node_key],
+                node=node + [key],
                 ignore=ignore)
 
             for diffed in recurred:
@@ -107,13 +103,9 @@ def diff(first, second, node=None, ignore=None):
         if first != second:
             yield CHANGE, dotted_node, (first, second)
 
-    differs = {
-        dict: diff_dict_list,
-        list: diff_dict_list,
-    }
-
-    differ = differs.get(type(first))
-    return ((isinstance(second, type(first)) and differ) or diff_otherwise)()
+    if isinstance(second, type(first)) and isinstance(first, (dict, list)):
+        return diff_dict_list()
+    return diff_otherwise()
 
 
 def patch(diff_result, destination):

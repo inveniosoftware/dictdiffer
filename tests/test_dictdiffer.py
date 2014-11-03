@@ -168,6 +168,35 @@ class DictDifferTests(unittest.TestCase):
         assert len(result) == 1
         assert result == [('change', ['a', 'b', 2], (201, 202))]
 
+    def test_dict_subclasses(self):
+        class Foo(dict):
+            pass
+
+        first = Foo({2014: [
+            dict(month=6, category=None, sum=672.00),
+            dict(month=6, category=1, sum=-8954.00),
+            dict(month=7, category=None, sum=7475.17),
+            dict(month=7, category=1, sum=-11745.00),
+            dict(month=8, category=None, sum=-12140.00),
+            dict(month=8, category=1, sum=-11812.00),
+            dict(month=9, category=None, sum=-31719.41),
+            dict(month=9, category=1, sum=-11663.00),
+        ]})
+
+        second = Foo({2014: [
+            dict(month=6, category=None, sum=672.00),
+            dict(month=6, category=1, sum=-8954.00),
+            dict(month=7, category=None, sum=7475.17),
+            dict(month=7, category=1, sum=-11745.00),
+            dict(month=8, category=None, sum=-12141.00),
+            dict(month=8, category=1, sum=-11812.00),
+            dict(month=9, category=None, sum=-31719.41),
+            dict(month=9, category=2, sum=-11663.00),
+        ]})
+
+        diffed = next(diff(first, second))
+        assert ('change', [2014, 4, 'sum'], (-12140.0, -12141.0)) == diffed
+
 
 class DiffPatcherTests(unittest.TestCase):
     def test_addition(self):
