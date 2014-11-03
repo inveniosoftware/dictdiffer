@@ -48,6 +48,8 @@ def diff(first, second, node=None, ignore=None):
     else:
         dotted_node = list(node)
 
+    differ = False
+
     if isinstance(first, dict) and isinstance(second, dict):
         # dictionaries are not hashable, we can't use sets
         def check(key):
@@ -60,6 +62,8 @@ def diff(first, second, node=None, ignore=None):
         addition = [k for k in second if k not in first and check(k)]
         deletion = [k for k in first if k not in second and check(k)]
 
+        differ = True
+
     elif isinstance(first, list) and isinstance(second, list):
         len_first = len(first)
         len_second = len(second)
@@ -68,12 +72,13 @@ def diff(first, second, node=None, ignore=None):
         addition = list(range(min(len_first, len_second), len_second))
         deletion = list(reversed(range(min(len_first, len_second), len_first)))
 
-    def diff_dict_list():
-        """Compare if object is a dictionary.
+        differ = True
 
-        Call again the parent function as recursive if dictionary have child
-        objects.  Yields `add` and `remove` flags.
-        """
+    if differ:
+        # Compare if object is a dictionary.
+        #
+        # Call again the parent function as recursive if dictionary have child
+        # objects.  Yields `add` and `remove` flags.
         for key in intersection:
             # if type is not changed, callees again diff function to compare.
             # otherwise, the change will be handled as `change` flag.
@@ -98,14 +103,10 @@ def diff(first, second, node=None, ignore=None):
                 # and values.
                 (key, first[key]) for key in deletion]
 
-    def diff_otherwise():
-        """Compare string and integer types and yield `change` flag."""
+    else:
+        # Compare string and integer types and yield `change` flag.
         if first != second:
             yield CHANGE, dotted_node, (first, second)
-
-    if isinstance(second, type(first)) and isinstance(first, (dict, list)):
-        return diff_dict_list()
-    return diff_otherwise()
 
 
 def patch(diff_result, destination):
