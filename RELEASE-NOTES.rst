@@ -1,8 +1,8 @@
 ===============================
- Dictdiffer v0.2.0 is released
+ Dictdiffer v0.2.1 is released
 ===============================
 
-Dictdiffer v0.2.0 was released on September 29, 2014.
+Dictdiffer v0.2.1 was released on TBD.
 
 About
 -----
@@ -13,8 +13,8 @@ dictionaries.
 What's new
 ----------
 
-- Fix for empty list instructions. (#30)
-- Regression test for empty list instructions.
+- Adds ignore argument to `diff` function that allows skipping check on
+  specified keys. (#34)
 
 Installation
 ------------
@@ -24,7 +24,7 @@ Installation
 Documentation
 -------------
 
-   http://dictdiffer.readthedocs.org/en/v0.2.0
+   http://dictdiffer.readthedocs.org/en/v0.2.1
 
 Good luck and thanks for using Dictdiffer.
 

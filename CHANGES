@@ -1,6 +1,11 @@
 Changes
 =======
 
+Version 0.2.1 (released TBD):
+
+- Adds ignore argument to `diff` function that allows skipping check on
+  specified keys. (#34)
+
 Version 0.2.0 (released 2014-09-29):
 
 - Fix for empty list instructions. (#30)
