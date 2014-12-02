@@ -1,7 +1,7 @@
 # This file is part of Dictdiffer.
 #
 # Copyright (C) 2013 Fatih Erikli.
-# Copyright (C) 2013, 2014 CERN.
+# Copyright (C) 2013, 2014, 2015 CERN.
 #
 # Dictdiffer is free software; you can redistribute it and/or modify
 # it under the terms of the MIT License; see LICENSE file for more
@@ -9,23 +9,24 @@
 
 """Dictdiffer is a helper module to diff and patch dictionaries."""
 
-import sys
 import copy
 
-if sys.version_info[0] == 3:  # pragma: no cover (Python 2/3 specific code)
-    string_types = str,
-else:  # pragma: no cover (Python 2/3 specific code)
-    string_types = basestring,
+from .utils import (PathLimit,
+                    create_dotted_node,
+                    dot_lookup,
+                    string_types)
+from .version import __version__
 
 (ADD, REMOVE, CHANGE) = (
     'add', 'remove', 'change')
 
-from .version import __version__
+__all__ = ('diff', 'patch', 'swap', 'revert', 'merge',
+           'dot_lookup', '__version__')
 
-__all__ = ('diff', 'patch', 'swap', 'revert', 'dot_lookup', '__version__')
 
-
-def diff(first, second, node=None, ignore=None):
+def diff(first, second, node=None, ignore=None,
+         extractors=None, try_default=True,
+         expand=False, path_limit=None):
     """Compare two dictionary object, and returns a diff result.
 
     Return iterator with differences between two dictionaries.
@@ -38,87 +39,120 @@ def diff(first, second, node=None, ignore=None):
     :param second: new dictionary or list
     :param node: key for comparison that can be used in :func:`dot_lookup`
     :param ignore: list of keys that should not be checked
+    :param extractors: dictionary structure for customized extraction
+                       algorithms
+    :param try_default: flag to utilize the 'default' key in the extractors
+                        dictionary
+    :param expand: flag controlling the general extraction behavior. Setting
+                   this to True will add the different 'stages' of an object
+    :param path_limit: a PathLimit object that will stop the extraction
+                       process at a certain path
+
+        >>> a = {}
+        >>> b = {'foo': {'bar': 'baz'}}
+        >>> result = diff(a, b, expand=True)
+        >>> list(result)
+        [('add', '', [('foo', {})]),
+         ('add', 'foo', [('bar', 'baz'])]
+
+        >>> a = {'foo': {'bar': 'baz', 'apple': 'banana'}}
+        >>> b = {'foo': {'bar': 'bay', 'apple': 'banana'}}
+        >>> result = diff(a, b, PathLimit([('foo',)]))
+        >>> list(result)
+        [('change', 'foo', ({'bar': 'baz', 'apple': 'banana'},
+                            {'bar': 'bay', 'apple': 'banana'}))]
 
     .. versionchanged:: 0.3
        Added *ignore* parameter.
+       Added *extractors* parameter.
+       Added *try_default* parameter.
+       Added *expand* parameter.
+       Added *path_limit* parameter.
     """
+    extractors = extractors if extractors else get_default_extractors()
+    path_limit = path_limit if path_limit else PathLimit()
     node = node or []
-    if all(map(lambda x: isinstance(x, string_types), node)):
-        dotted_node = '.'.join(node)
-    else:
-        dotted_node = list(node)
+    dotted_node = create_dotted_node(node)
 
-    differ = False
+    def get_extractor(extractors, first, second, node, try_default):
+        extractor = (extractors.get(tuple(node)) or
+                     (extractors.get(type(first))
+                      if type(first) == type(second)
+                      else None))
 
-    if isinstance(first, dict) and isinstance(second, dict):
-        # dictionaries are not hashable, we can't use sets
-        def check(key):
-            """Test if key in current node should be ignored."""
-            return ignore is None \
-                or (dotted_node + [key] if isinstance(dotted_node, list)
-                    else '.'.join(node + [str(key)])) not in ignore
+        if extractor:
+            return extractor
+        else:
+            if try_default:
+                for extractor in extractors['default']:
+                    if extractor.is_applicable(first, second):
+                        return extractor
 
-        intersection = [k for k in first if k in second and check(k)]
-        addition = [k for k in second if k not in first and check(k)]
-        deletion = [k for k in first if k not in second and check(k)]
+    extractor = get_extractor(extractors, first, second, node, try_default)
 
-        differ = True
+    diffs = (extractor.extract(first, second, node, dotted_node, ignore)
+             if extractor else None)
 
-    elif isinstance(first, list) and isinstance(second, list):
-        len_first = len(first)
-        len_second = len(second)
-
-        intersection = list(range(0, min(len_first, len_second)))
-        addition = list(range(min(len_first, len_second), len_second))
-        deletion = list(reversed(range(min(len_first, len_second), len_first)))
-
-        differ = True
-
-    elif isinstance(first, set) and isinstance(second, set):
-
-        intersection = {}
-        addition = second - first
-        if len(addition):
-            yield ADD, dotted_node, [(0, addition)]
-        deletion = first - second
-        if len(deletion):
-            yield REMOVE, dotted_node, [(0, deletion)]
-
-        return
-
-    if differ:
-        # Compare if object is a dictionary.
-        #
-        # Call again the parent function as recursive if dictionary have child
-        # objects.  Yields `add` and `remove` flags.
-        for key in intersection:
-            # if type is not changed, callees again diff function to compare.
-            # otherwise, the change will be handled as `change` flag.
-            recurred = diff(
-                first[key],
-                second[key],
-                node=node + [key],
-                ignore=ignore)
-
-            for diffed in recurred:
-                yield diffed
-
-        if addition:
-            yield ADD, dotted_node, [
-                # for additions, return a list that consist with
-                # two-pair tuples.
-                (key, second[key]) for key in addition]
-
-        if deletion:
-            yield REMOVE, dotted_node, [
-                # for deletions, return the list of removed keys
-                # and values.
-                (key, first[key]) for key in deletion]
-
-    else:
+    if diffs is None:
         # Compare string and integer types and yield `change` flag.
         if first != second:
             yield CHANGE, dotted_node, (first, second)
+        return
+
+    for action, first_key, second_key, old_val, new_val in diffs:
+        if action == 'change':
+            if expand and path_limit.path_is_limit(node+[first_key]):
+                yield (CHANGE,
+                       create_dotted_node(node+[first_key]),
+                       (old_val, new_val))
+            else:
+                recurred = diff(old_val,
+                                new_val,
+                                node=node + [first_key],
+                                ignore=ignore,
+                                extractors=extractors,
+                                try_default=try_default,
+                                expand=expand,
+                                path_limit=path_limit)
+
+                for diffed in recurred:
+                    yield diffed
+        elif action == 'insert':
+            if second_key is not None:
+                if expand:
+                    if path_limit.path_is_limit(node+[second_key]):
+                        yield (ADD, dotted_node,
+                               [(second_key, new_val)])
+                    else:
+                        if get_extractor(extractors,
+                                         second[second_key],
+                                         second[second_key],
+                                         node+[second_key], try_default):
+                            yield (ADD, dotted_node,
+                                   [(second_key,
+                                     new_val.__class__())])
+                            _additions = diff(new_val.__class__(),
+                                              new_val,
+                                              node=node + [second_key],
+                                              ignore=ignore,
+                                              extractors=extractors,
+                                              try_default=try_default,
+                                              expand=expand,
+                                              path_limit=path_limit)
+                            for _addition in _additions:
+                                yield _addition
+                        else:
+                            yield (ADD, dotted_node,
+                                   [(second_key, new_val)])
+                else:
+                    yield ADD, dotted_node, [(second_key, new_val)]
+            else:
+                yield ADD, dotted_node, [(0, new_val)]
+        elif action == 'delete':
+            if first_key is not None:
+                yield REMOVE, dotted_node, [(first_key, old_val)]
+            else:
+                yield REMOVE, dotted_node, [(0, old_val)]
 
 
 def patch(diff_result, destination):
@@ -201,7 +235,7 @@ def swap(diff_result):
         CHANGE: change
     }
 
-    for action, node, change in diff_result:
+    for action, node, change in reversed(list(diff_result)):
         yield swappers[action](node, change)
 
 
@@ -219,42 +253,39 @@ def revert(diff_result, destination):
     return patch(swap(diff_result), destination)
 
 
-def dot_lookup(source, lookup, parent=False):
-    """Allow you to reach dictionary items with string or list lookup.
+from .extractors import get_default_extractors
+from .merger import Merger, UnresolvedConflictsException
 
-    Recursively find value by lookup key split by '.'.
 
-        >>> dot_lookup({'a': {'b': 'hello'}}, 'a.b')
-        'hello'
+def merge(lca, first, second, actions, additional_info=None):
+    """Returns the unified patches from lca -> first and from lca -> second 
+    utilizing the provided actions and additional_info.
 
-    If parent argument is True, returns the parent node of matched
-    object.
+    Will raise an UnresolvedConflictsException if it's not possible to merge
+    the patches automatically.
 
-        >>> dot_lookup({'a': {'b': 'hello'}}, 'a.b', parent=True)
-        {'b': 'hello'}
-
-    If node is empty value, returns the whole dictionary object.
-
-        >>> dot_lookup({'a': {'b': 'hello'}}, '')
-        {'a': {'b': 'hello'}}
+    :param lca: the latest common ancestor of *first* and *second*
+    :param first: the first changed data structure
+    :param second: the second changed data structure
+    :param actions: a WildcardDict object containing the actions to solve the 
+                    conflicts
+    :param additional_info: any kind of data structure containing additional
+                            information utilized by the resolve actions
 
     """
-    if lookup is None or lookup == '' or lookup == []:
-        return source
 
-    value = source
-    if isinstance(lookup, string_types):
-        keys = lookup.split('.')
-    elif isinstance(lookup, list):
-        keys = lookup
-    else:
-        raise TypeError('lookup must be string or list')
+    m = Merger(lca, first, second, actions, additional_info)
 
-    if parent:
-        keys = keys[:-1]
+    try:
+        m.run()
+    except UnresolvedConflictsException:
+        raise UnresolvedConflictsException(m)
 
-    for key in keys:
-        if isinstance(value, list):
-            key = int(key)
-        value = value[key]
-    return value
+    return m.unified_patches
+
+
+def continue_merge(merger, picks):
+    """Continues the merging process after an UnresolvedConflictsException"""
+
+    merger.continue_run(picks)
+    return merger.unified_patches
