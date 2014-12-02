@@ -1,7 +1,7 @@
 # This file is part of Dictdiffer.
 #
 # Copyright (C) 2013 Fatih Erikli.
-# Copyright (C) 2013, 2014 CERN.
+# Copyright (C) 2013, 2014, 2015 CERN.
 #
 # Dictdiffer is free software; you can redistribute it and/or modify
 # it under the terms of the MIT License; see LICENSE file for more
@@ -66,8 +66,9 @@ class DictDifferTests(unittest.TestCase):
     def test_remove_list(self):
         first = {'a': ['b', 'c']}
         second = {'a': []}
-        diffed = next(diff(first, second))
-        assert ('remove', 'a', [(1, 'c'), (0, 'b'), ]) == diffed
+        diffed = list(diff(first, second))
+        assert [('remove', 'a', [(1, 'c')]),
+                ('remove', 'a', [(0, 'b')])] == diffed
 
     def test_add_set(self):
         first = {'a': set([1, 2, 3])}
@@ -229,6 +230,12 @@ class DiffPatcherTests(unittest.TestCase):
         assert second == patch(
             [('add', 'a', [('d', 'e')])], first)
 
+    def test_addition_old(self):
+        first = {}
+        second = {'a': 'b', 'c': 'd'}
+        assert second == patch(
+            [('add', '', [('a', 'b'), ('c', 'd')])], first)
+
     def test_changes(self):
         first = {'a': 'b'}
         second = {'a': 'c'}
@@ -250,6 +257,12 @@ class DiffPatcherTests(unittest.TestCase):
         second = {}
         assert second == patch(
             [('remove', '', [('a', 'b')])], first)
+
+    def test_remove_old(self):
+        first = {'a': 'b', 'c': 'd'}
+        second = {}
+        assert second == patch(
+            [('remove', '', [('a', 'b'), ('c', 'd')])], first)
 
     def test_remove_list(self):
         first = {'a': [1, 2, 3]}
