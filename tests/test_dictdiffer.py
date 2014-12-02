@@ -66,8 +66,9 @@ class DictDifferTests(unittest.TestCase):
     def test_remove_list(self):
         first = {'a': ['b', 'c']}
         second = {'a': []}
-        diffed = next(diff(first, second))
-        assert ('remove', 'a', [(1, 'c'), (0, 'b'), ]) == diffed
+        diffed = list(diff(first, second))
+        assert [('remove', 'a', [(1, 'c')]),
+                ('remove', 'a', [(0, 'b')])] == diffed
 
     def test_add_set(self):
         first = {'a': set([1, 2, 3])}
