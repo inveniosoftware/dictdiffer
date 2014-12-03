@@ -66,11 +66,13 @@ class DictExtractor(object):
                 or (dotted_node + [key] if isinstance(dotted_node, list)
                     else '.'.join(node + [str(key)])) not in ignore
 
-        intersection = [k for k in first if k in second and check(k)]
-        addition = [k for k in second if k not in first and check(k)]
-        deletion = [k for k in first if k not in second and check(k)]
-
-        return intersection, addition, deletion
+        for k in set(first.keys()+second.keys()):
+            if k in first and k in second and check(k):
+                yield ('change', k, k)
+            elif k in first and check(k):
+                yield ('delete', k, k)
+            elif k in second and check(k):
+                yield ('insert', k, k)
 
 
 class ListExtractor(object):
@@ -81,11 +83,13 @@ class ListExtractor(object):
         len_first = len(first)
         len_second = len(second)
 
-        intersection = list(range(0, min(len_first, len_second)))
-        addition = list(range(min(len_first, len_second), len_second))
-        deletion = list(reversed(range(min(len_first, len_second), len_first)))
-
-        return intersection, addition, deletion
+        for i in range(max(len_first, len_second)):
+            if i < min(len_first, len_second):
+                yield ('change', i, i)
+            elif i >= len_first:
+                yield ('insert', i, i)
+            else:
+                yield ('delete', i, i)
 
 
 class SequenceExtractor(object):
@@ -93,37 +97,41 @@ class SequenceExtractor(object):
         return isinstance(first, list) and isinstance(second, list)
 
     def extract(self, first, second, node, dotted_node, ignore):
+        #from itertools import izip_longes
         from difflib import SequenceMatcher
         sequence = SequenceMatcher(None, first, second)
 
-        intersection = []
-        addition = []
-        deletion = []
-
-        latest_insert = None
-        latest_delete = None
+        latest_insertions = 0 
+        latest_deletions = 0
 
         for _tuple in sequence.get_opcodes():
             if _tuple[0] == 'insert':
-                if latest_insert == None:
-                    latest_insert = _tuple[1]
-                else:
-                    latest_insert += _tuple[1]
-                for new_path in range(_tuple[3], _tuple[4]):
-                    addition.append((latest_insert, new_path))
-                    latest_insert += 1
-            elif _tuple[0] == 'replace':
-                pass
+                for i, new_path in enumerate(range(_tuple[3], _tuple[4])):
+                    yield ('insert', _tuple[1]+i+latest_insertions-latest_deletions, new_path)
+                latest_insertions += _tuple[4]-_tuple[3]
             elif _tuple[0] == 'delete':
-                #TODO: This needs a lot of thought :/
-                if latest_delete = None:
-                    latest_delete = _tuple[2]-1
-                else:
-                    latest_delete -= _tuple[2]
-                for i, _ in enumerate(range(_tuple[1], _tuple[2])):
-                    deletion.append((latest_delete-i, None))
+                for index in reversed(range(_tuple[1], _tuple[2])):
+                    yield ('delete', index-latest_deletions+latest_insertions, None)
+                latest_deletions += _tuple[2]-_tuple[1]
+            elif _tuple[0] == 'replace':
+                old_range = range(_tuple[1], _tuple[2])
+                new_range = range(_tuple[3], _tuple[4])
 
-        return intersection, addition, deletion
+                changes_index = min(len(old_range), len(new_range))
+
+                for old_path, new_path in zip(old_range, new_range):
+                    yield ('change', old_path+latest_insertions-latest_deletions, new_path)
+                    last_old_path = old_path+latest_insertions-latest_deletions
+
+                if len(old_range) < len(new_range):
+                    for new_path in new_range[changes_index:]:
+                        yield ('insert', last_old_path+1, new_path)
+                        last_old_path += 1
+                        latest_insertions += 1
+                elif len(old_range) > len(new_range):
+                    for old_path in reversed(old_range[changes_index:]):
+                        yield ('delete', old_path+latest_insertions-latest_deletions, None)
+                    latest_deletions += len(old_range)-changes_index
 
 
 EXTRACTORS = {'default': [DictExtractor(), ListExtractor()]}
@@ -157,85 +165,60 @@ def diff(first, second, node=None, ignore=None, extractors=EXTRACTORS,
     node = node or []
     dotted_node = _create_dotted_node(node)
 
-    differ = False
-
     _extractors = (extractors.get(tuple(node)) or
                    extractors.get(type(first)) or
                    extractors['default'])
 
     for extractor in _extractors:
         if extractor.is_applicable(first, second):
-            differ = True
-            intersection, addition, deletion = extractor.extract(first, second,
-                                                                 node,
-                                                                 dotted_node,
-                                                                 ignore)
+            diffs = extractor.extract(first, second, node, dotted_node, ignore)
             break
-
-    if differ:
-        # Compare if object is a dictionary.
-        #
-        # Call again the parent function as recursive if dictionary have child
-        # objects.  Yields `add` and `remove` flags.
-        for key in intersection:
-            # if type is not changed, callees again diff function to compare.
-            # otherwise, the change will be handled as `change` flag.
-            if expand and path_limit.path_is_limit(node+[key]):
-                yield CHANGE, _create_dotted_node(node+[key]), (first[key],
-                                                                second[key])
-            else:
-                recurred = diff(
-                    first[key],
-                    second[key],
-                    node=node + [key],
-                    ignore=ignore,
-                    expand=expand)
-
-                for diffed in recurred:
-                    yield diffed
-
-        if addition:
-            if expand:
-                for key in addition:
-                    if path_limit.path_is_limit(node+[key]):
-                        yield ADD, dotted_node, [(key, second[key])]
-                    else:
-                        for extractor in _extractors:
-                            if extractor.is_applicable(second[key],
-                                                       second[key]):
-                                yield (ADD, dotted_node,
-                                       [(key, second[key].__class__())])
-                                _additions = diff(second[key].__class__(),
-                                                  second[key],
-                                                  node=node + [key],
-                                                  ignore=ignore,
-                                                  expand=expand)
-                                for _addition in _additions:
-                                    yield _addition
-
-                                break
-                        else:
-                            yield ADD, dotted_node, [(key, second[key])]
-            else:
-                yield ADD, dotted_node, [
-                    # for additions, return a list that consist with
-                    # two-pair tuples.
-                    (key, second[key]) for key in addition]
-
-        if deletion:
-            if expand:
-                for key in deletion:
-                    yield REMOVE, dotted_node, [(key, first[key])]
-            else:
-                yield REMOVE, dotted_node, [
-                    # for deletions, return the list of removed keys
-                    # and values.
-                    (key, first[key]) for key in deletion]
-
     else:
         # Compare string and integer types and yield `change` flag.
         if first != second:
             yield CHANGE, dotted_node, (first, second)
+        return
+
+    for action, first_key, second_key in diffs:
+        if action == 'change':
+            if expand and path_limit.path_is_limit(node+[first_key]):
+                yield (CHANGE,
+                       _create_dotted_node(node+[first_key]),
+                       (first[key], second[key]))
+            else:
+                recurred = diff(first[first_key],
+                                second[second_key],
+                                node=node + [first_key],
+                                ignore=ignore,
+                                expand=expand)
+
+                for diffed in recurred:
+                    yield diffed
+        elif action == 'insert':
+            if expand:
+                if path_limit.path_is_limit(node+[second_key]):
+                    yield ADD, dotted_node, [(second_key, second[second_key])]
+                else:
+                    for extractor in _extractors:
+                        if extractor.is_applicable(second[second_key],
+                                                   second[second_key]):
+                            yield (ADD, dotted_node,
+                                   [(second_key, second[second_key].__class__())])
+                            _additions = diff(second[second_key].__class__(),
+                                              second[second_key],
+                                              node=node + [second_key],
+                                              ignore=ignore,
+                                              expand=expand)
+                            for _addition in _additions:
+                                yield _addition
+                            break
+                    else:
+                        yield ADD, dotted_node, [(second_key, second[second_key])]
+                    
+            else:
+                yield ADD, dotted_node, [(second_key, second[second_key])]
+        elif action == 'delete':
+            yield REMOVE, dotted_node, [(first_key, first[first_key])]
 
 
 def patch(diff_result, destination):
