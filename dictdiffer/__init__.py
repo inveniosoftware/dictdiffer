@@ -74,6 +74,18 @@ def diff(first, second, node=None, ignore=None):
 
         differ = True
 
+    elif isinstance(first, set) and isinstance(second, set):
+
+        intersection = {}
+        addition = second - first
+        if len(addition):
+            yield ADD, dotted_node, [(0, addition)]
+        deletion = first - second
+        if len(deletion):
+            yield REMOVE, dotted_node, [(0, deletion)]
+
+        return
+
     if differ:
         # Compare if object is a dictionary.
         #
@@ -118,6 +130,8 @@ def patch(diff_result, destination):
             dest = dot_lookup(destination, node)
             if isinstance(dest, list):
                 dest.insert(key, value)
+            elif isinstance(dest, set):
+                dest |= value
             else:
                 dest[key] = value
 
@@ -133,8 +147,12 @@ def patch(diff_result, destination):
         dest[last_node] = value
 
     def remove(node, changes):
-        for key, _ in changes:
-            del dot_lookup(destination, node)[key]
+        for key, value in changes:
+            dest = dot_lookup(destination, node)
+            if isinstance(dest, set):
+                dest -= value
+            else:
+                del dest[key]
 
     patchers = {
         REMOVE: remove,

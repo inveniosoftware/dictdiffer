@@ -17,4 +17,4 @@ This file is imported by ``dictdiffer.__init__``, and parsed by
 # Do not change the format of this next line. Doing so risks breaking
 # setup.py and docs/conf.py
 
-__version__ = "0.3.1.dev20141105"
+__version__ = "0.4.0.dev20141208"

@@ -69,6 +69,25 @@ class DictDifferTests(unittest.TestCase):
         diffed = next(diff(first, second))
         assert ('remove', 'a', [(1, 'c'), (0, 'b'), ]) == diffed
 
+    def test_add_set(self):
+        first = {'a': set([1, 2, 3])}
+        second = {'a': set([0, 1, 2, 3])}
+        diffed = next(diff(first, second))
+        assert ('add', 'a', [(0, set([0]))]) == diffed
+
+    def test_remove_set(self):
+        first = {'a': set([0, 1, 2, 3])}
+        second = {'a': set([1, 2, 3])}
+        diffed = next(diff(first, second))
+        assert ('remove', 'a', [(0, set([0]))]) == diffed
+
+    def test_change_set(self):
+        first = {'a': set([0, 1, 2, 3])}
+        second = {'a': set([1, 2, 3, 4])}
+        diffed = list(diff(first, second))
+        assert ('add', 'a', [(0, set([4]))]) in diffed
+        assert ('remove', 'a', [(0, set([0]))]) in diffed
+
     def test_types(self):
         first = {'a': ['a']}
         second = {'a': 'a'}
@@ -264,6 +283,18 @@ class DiffPatcherTests(unittest.TestCase):
         second = {'a': {'b': {'c': [{'d': 'f'}]}}}
         assert second == patch(
             [('change', 'a.b.c.0.d', ('e', 'f'))], first)
+
+    def test_remove_set(self):
+        first = {'a': set([1, 2, 3])}
+        second = {'a': set([1])}
+        assert second == patch(
+            [('remove', 'a', [(0, set([2, 3]))])], first)
+
+    def test_add_set(self):
+        first = {'a': set([1])}
+        second = {'a': set([1, 2])}
+        assert second == patch(
+            [('add', 'a', [(0, set([2]))])], first)
 
     def test_dict_int_key(self):
         first = {0: 0}
