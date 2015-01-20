@@ -187,6 +187,11 @@ class DictDifferTests(unittest.TestCase):
         assert len(result) == 1
         assert result == [('change', ['a', 'b', 2], (201, 202))]
 
+    def test_list_same(self):
+        """Diff for the same list should be empty."""
+        first = {1: [1]}
+        assert len(list(diff(first, first))) == 0
+
     def test_dict_subclasses(self):
         class Foo(dict):
             pass
