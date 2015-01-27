@@ -63,6 +63,7 @@ setup(
     author='Invenio Collaboration',
     author_email='info@invenio-software.org',
     url='https://github.com/inveniosoftware/dictdiffer',
+    install_requires=['orderedset>=1.1.2', 'prettytable>=0.7.2'],
     packages=['dictdiffer'],
     zip_safe=False,
     extras_require={
