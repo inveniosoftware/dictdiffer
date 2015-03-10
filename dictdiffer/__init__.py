@@ -38,13 +38,16 @@ def diff(first, second, node=None, ignore=None):
         >>> list(result)
         [('change', 'a', ('b', 'c'))]
 
-    :param first: original dictionary or list
-    :param second: new dictionary or list
+    :param first: original dictionary, list or set
+    :param second: new dictionary, list or set
     :param node: key for comparison that can be used in :func:`dot_lookup`
     :param ignore: list of keys that should not be checked
 
     .. versionchanged:: 0.3
        Added *ignore* parameter.
+
+    .. versionchanged:: 0.4
+       Arguments ``first`` and ``second`` can now contain a ``set``.
     """
     node = node or []
     if all(map(lambda x: isinstance(x, string_types), node)):

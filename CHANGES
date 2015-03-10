@@ -1,6 +1,14 @@
 Changes
 =======
 
+Version 0.4.0 (released 2015-03-11)
+
+- Adds support for diffing and patching of sets. (#44)
+- New tests for diff on the same lists. (#48)
+- Fix for exception when dict has unicode keys and ignore parameter is
+  provided. (#50)
+- PEP8 improvements.
+
 Version 0.3.0 (released 2014-11-05):
 
 - Adds ignore argument to `diff` function that allows skipping check

@@ -1,8 +1,8 @@
 ===============================
- Dictdiffer v0.3.0 is released
+ Dictdiffer v0.4.0 is released
 ===============================
 
-Dictdiffer v0.3.0 was released on November 5, 2014.
+Dictdiffer v0.4.0 was released on March 11, 2015.
 
 About
 -----
@@ -13,10 +13,11 @@ dictionaries.
 What's new
 ----------
 
-- Adds ignore argument to `diff` function that allows skipping check
-  on specified keys. (#34 #35)
-- Fix for diffing of dict or list subclasses. (#37)
-- Better instance checking of diffing objects. (#39)
+- Adds support for diffing and patching of sets. (#44)
+- New tests for diff on the same lists. (#48)
+- Fix for exception when dict has unicode keys and ignore parameter is
+  provided. (#50)
+- PEP8 improvements.
 
 Installation
 ------------
@@ -26,7 +27,7 @@ Installation
 Documentation
 -------------
 
-   http://dictdiffer.readthedocs.org/en/v0.3.0
+   http://dictdiffer.readthedocs.org/en/v0.4.0
 
 Good luck and thanks for using Dictdiffer.
 

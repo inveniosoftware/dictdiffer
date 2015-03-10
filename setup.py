@@ -1,11 +1,13 @@
 # This file is part of Dictdiffer.
 #
 # Copyright (C) 2013 Fatih Erikli.
-# Copyright (C) 2014 CERN.
+# Copyright (C) 2014, 2015 CERN.
 #
 # Dictdiffer is free software; you can redistribute it and/or modify
 # it under the terms of the MIT License; see LICENSE file for more
 # details.
+
+"""Dictdiffer is a library that helps you to diff and patch dictionaries."""
 
 import os
 import re
@@ -58,8 +60,7 @@ tests_require = [
 setup(
     name='dictdiffer',
     version=version,
-    description='Dictdiffer is a helper module that helps you '
-                'to diff and patch dictionaries',
+    description=__doc__,
     author='Invenio Collaboration',
     author_email='info@invenio-software.org',
     url='https://github.com/inveniosoftware/dictdiffer',
