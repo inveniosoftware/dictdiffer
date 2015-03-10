@@ -12,6 +12,8 @@
 import sys
 import copy
 
+from .version import __version__
+
 if sys.version_info[0] == 3:  # pragma: no cover (Python 2/3 specific code)
     string_types = str,
 else:  # pragma: no cover (Python 2/3 specific code)
@@ -19,8 +21,6 @@ else:  # pragma: no cover (Python 2/3 specific code)
 
 (ADD, REMOVE, CHANGE) = (
     'add', 'remove', 'change')
-
-from .version import __version__
 
 __all__ = ('diff', 'patch', 'swap', 'revert', 'dot_lookup', '__version__')
 
