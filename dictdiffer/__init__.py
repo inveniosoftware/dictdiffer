@@ -1,7 +1,7 @@
 # This file is part of Dictdiffer.
 #
 # Copyright (C) 2013 Fatih Erikli.
-# Copyright (C) 2013, 2014 CERN.
+# Copyright (C) 2013, 2014, 2015 CERN.
 #
 # Dictdiffer is free software; you can redistribute it and/or modify
 # it under the terms of the MIT License; see LICENSE file for more
@@ -16,8 +16,12 @@ from .version import __version__
 
 if sys.version_info[0] == 3:  # pragma: no cover (Python 2/3 specific code)
     string_types = str,
+    text_type = str
+    PY2 = False
 else:  # pragma: no cover (Python 2/3 specific code)
     string_types = basestring,
+    text_type = unicode
+    PY2 = True
 
 (ADD, REMOVE, CHANGE) = (
     'add', 'remove', 'change')
@@ -54,9 +58,13 @@ def diff(first, second, node=None, ignore=None):
         # dictionaries are not hashable, we can't use sets
         def check(key):
             """Test if key in current node should be ignored."""
+            if PY2 and isinstance(key, text_type):
+                new_key = key.encode('utf-8')
+            else:
+                new_key = key
             return ignore is None \
-                or (dotted_node + [key] if isinstance(dotted_node, list)
-                    else '.'.join(node + [str(key)])) not in ignore
+                or (node + [key] if isinstance(dotted_node, list)
+                    else '.'.join(node + [str(new_key)])) not in ignore
 
         intersection = [k for k in first if k in second and check(k)]
         addition = [k for k in second if k not in first and check(k)]

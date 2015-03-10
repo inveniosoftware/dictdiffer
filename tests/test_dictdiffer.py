@@ -1,7 +1,9 @@
+# -*- coding: utf-8 -*-
+#
 # This file is part of Dictdiffer.
 #
 # Copyright (C) 2013 Fatih Erikli.
-# Copyright (C) 2013, 2014 CERN.
+# Copyright (C) 2013, 2014, 2015 CERN.
 #
 # Dictdiffer is free software; you can redistribute it and/or modify
 # it under the terms of the MIT License; see LICENSE file for more
@@ -93,6 +95,16 @@ class DictDifferTests(unittest.TestCase):
         second = {'a': 'a'}
         diffed = next(diff(first, second))
         assert ('change', 'a', (['a'], 'a')) == diffed
+
+    def test_unicode_keys(self):
+        first = {u'привет': 1}
+        second = {'hello': 1}
+        diffed = list(diff(first, second))
+        assert ('add', '', [('hello', 1)]) in diffed
+        assert ('remove', '', [(u'привет', 1)]) in diffed
+
+        diffed = list(diff(first, second, ignore=['hello']))
+        assert ('remove', '', [(u'привет', 1)]) == diffed[0]
 
     def test_ignore_key(self):
         first = {'a': 'a', 'b': 'b', 'c': 'c'}
