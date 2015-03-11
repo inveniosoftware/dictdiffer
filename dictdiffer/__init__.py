@@ -12,16 +12,10 @@
 import sys
 import copy
 
+from .utils import dot_lookup, PathLimit
 from .version import __version__
+from ._compat import string_types, text_type, PY2
 
-if sys.version_info[0] == 3:  # pragma: no cover (Python 2/3 specific code)
-    string_types = str,
-    text_type = str
-    PY2 = False
-else:  # pragma: no cover (Python 2/3 specific code)
-    string_types = basestring,
-    text_type = unicode
-    PY2 = True
 
 (ADD, REMOVE, CHANGE) = (
     'add', 'remove', 'change')
@@ -29,8 +23,8 @@ else:  # pragma: no cover (Python 2/3 specific code)
 __all__ = ('diff', 'patch', 'swap', 'revert', 'dot_lookup', '__version__')
 
 
-def diff(first, second, node=None, ignore=None):
-    """Compare two dictionary object, and returns a diff result.
+def diff(first, second, node=None, ignore=None, path_limit=None, expand=False):
+    """Compare two dictionary/list/set objects, and returns a diff result.
 
     Return iterator with differences between two dictionaries.
 
@@ -38,17 +32,53 @@ def diff(first, second, node=None, ignore=None):
         >>> list(result)
         [('change', 'a', ('b', 'c'))]
 
+    PathLimit:
+
+        >>> list(diff({}, {'a': {'b': 'c'}}))
+        [('add', '', [('a', {'b': 'c'})])]
+
+        >>> from dictdiffer.utils import PathLimit
+        >>> list(diff({}, {'a': {'b': 'c'}}, path_limit=PathLimit()))
+        [('add', '', [('a', {})]), ('add', 'a', [('b', 'c')])]
+
+        >>> from dictdiffer.utils import PathLimit
+        >>> list(diff({}, {'a': {'b': 'c'}}, path_limit=PathLimit([('a',)])))
+        [('add', '', [('a', {'b': 'c'})])]
+
+        >>> from dictdiffer.utils import PathLimit
+        >>> list(diff({}, {'a': {'b': 'c'}},
+        ...           path_limit=PathLimit([('a', 'b')])))
+        [('add', '', [('a', {})]), ('add', 'a', [('b', 'c')])]
+
+    Expand:
+
+        ... list(diff({}, {'foo': 'bar', 'apple': 'mango'}))
+        [('add', '', [('foo', 'bar'), ('apple', 'mango')])]
+
+        ... list(diff({}, {'foo': 'bar', 'apple': 'mango'}, expand=True))
+        [('add', '', [('foo', 'bar')]), ('add', '', [('apple', 'mango')])]
+
     :param first: original dictionary, list or set
     :param second: new dictionary, list or set
     :param node: key for comparison that can be used in :func:`dot_lookup`
     :param ignore: list of keys that should not be checked
+    :param path_limit: List of path limit tuples or dictdiffer.utils.Pathlimit
+                       object to limit the diff recursion depth
+    :param expand: Expands the patches
 
     .. versionchanged:: 0.3
        Added *ignore* parameter.
 
     .. versionchanged:: 0.4
        Arguments ``first`` and ``second`` can now contain a ``set``.
+
+    .. versionchanged:: 0.5
+       Added *path_limit* parameter.
+       Added *expand* paramter.
     """
+    if path_limit is not None and not isinstance(path_limit, PathLimit):
+        path_limit = PathLimit(path_limit)
+
     node = node or []
     if all(map(lambda x: isinstance(x, string_types), node)):
         dotted_node = '.'.join(node)
@@ -95,8 +125,6 @@ def diff(first, second, node=None, ignore=None):
         if len(deletion):
             yield REMOVE, dotted_node, [(0, deletion)]
 
-        return
-
     if differ:
         # Compare if object is a dictionary.
         #
@@ -105,26 +133,67 @@ def diff(first, second, node=None, ignore=None):
         for key in intersection:
             # if type is not changed, callees again diff function to compare.
             # otherwise, the change will be handled as `change` flag.
-            recurred = diff(
-                first[key],
-                second[key],
-                node=node + [key],
-                ignore=ignore)
+            if path_limit and path_limit.path_is_limit(node+[key]):
+                yield CHANGE, node+[key], (first[key], second[key])
+            else:
+                recurred = diff(first[key],
+                                second[key],
+                                node=node + [key],
+                                ignore=ignore,
+                                path_limit=path_limit,
+                                expand=expand)
 
-            for diffed in recurred:
-                yield diffed
+                for diffed in recurred:
+                    yield diffed
 
         if addition:
-            yield ADD, dotted_node, [
-                # for additions, return a list that consist with
-                # two-pair tuples.
-                (key, second[key]) for key in addition]
+            if path_limit:
+                collect = []
+                collect_recurred = []
+                for key in addition:
+                    if not isinstance(second[key], (set, list, dict)):
+                        collect.append((key, second[key]))
+                    elif path_limit.path_is_limit(node+[key]):
+                        collect.append((key, second[key]))
+                    else:
+                        collect.append((key, second[key].__class__()))
+                        recurred = diff(second[key].__class__(),
+                                        second[key],
+                                        node=node+[key],
+                                        ignore=ignore,
+                                        path_limit=path_limit,
+                                        expand=expand)
+
+                        collect_recurred.append(recurred)
+
+                if expand:
+                    for key, val in collect:
+                        yield ADD, dotted_node, [(key, val)]
+                else:
+                    yield ADD, dotted_node, collect
+
+                for recurred in collect_recurred:
+                    for diffed in recurred:
+                        yield diffed
+            else:
+                if expand:
+                    for key in addition:
+                        yield ADD, dotted_node, [(key, second[key])]
+                else:
+                    yield ADD, dotted_node, [
+                        # for additions, return a list that consist with
+                        # two-pair tuples.
+                        (key, second[key]) for key in addition]
 
         if deletion:
-            yield REMOVE, dotted_node, [
-                # for deletions, return the list of removed keys
-                # and values.
-                (key, first[key]) for key in deletion]
+            if expand:
+                for key in deletion:
+                    yield REMOVE, dotted_node, [(key, first[key])]
+            else:
+                yield REMOVE, dotted_node, [
+                    # for deletions, return the list of removed keys
+                    # and values.
+                    (key, first[key]) for key in deletion]
 
     else:
         # Compare string and integer types and yield `change` flag.
@@ -228,44 +297,3 @@ def revert(diff_result, destination):
 
     """
     return patch(swap(diff_result), destination)
-
-
-def dot_lookup(source, lookup, parent=False):
-    """Allow you to reach dictionary items with string or list lookup.
-
-    Recursively find value by lookup key split by '.'.
-
-        >>> dot_lookup({'a': {'b': 'hello'}}, 'a.b')
-        'hello'
-
-    If parent argument is True, returns the parent node of matched
-    object.
-
-        >>> dot_lookup({'a': {'b': 'hello'}}, 'a.b', parent=True)
-        {'b': 'hello'}
-
-    If node is empty value, returns the whole dictionary object.
-
-        >>> dot_lookup({'a': {'b': 'hello'}}, '')
-        {'a': {'b': 'hello'}}
-
-    """
-    if lookup is None or lookup == '' or lookup == []:
-        return source
-
-    value = source
-    if isinstance(lookup, string_types):
-        keys = lookup.split('.')
-    elif isinstance(lookup, list):
-        keys = lookup
-    else:
-        raise TypeError('lookup must be string or list')
-
-    if parent:
-        keys = keys[:-1]
-
-    for key in keys:
-        if isinstance(value, list):
-            key = int(key)
-        value = value[key]
-    return value

@@ -12,6 +12,7 @@
 import unittest
 
 from dictdiffer import diff, patch, revert, swap, dot_lookup
+from dictdiffer.utils import PathLimit
 
 
 class DictDifferTests(unittest.TestCase):
@@ -52,6 +53,104 @@ class DictDifferTests(unittest.TestCase):
         second = {'a': None}
         diffed = next(diff(first, second))
         assert ('change', 'a', ('b', None)) == diffed
+
+    def test_path_limit_as_list(self):
+        first = {}
+        second = {'author': {'last_name': 'Doe', 'first_name': 'John'}}
+        diffed = list(diff(first, second, path_limit=[('author',)]))
+
+        res = [('add', '', [('author',
+                             {'first_name': 'John', 'last_name': 'Doe'})])]
+
+        assert res == diffed
+
+    def test_path_limit_addition(self):
+        first = {}
+        second = {'author': {'last_name': 'Doe', 'first_name': 'John'}}
+        p = PathLimit([('author',)])
+        diffed = list(diff(first, second, path_limit=p))
+
+        res = [('add', '', [('author',
+                             {'first_name': 'John', 'last_name': 'Doe'})])]
+
+        assert res == diffed
+
+        first = {}
+        second = {'author': {'last_name': 'Doe', 'first_name': 'John'}}
+        p = PathLimit([('author',)])
+        diffed = list(diff(first, second, path_limit=p, expand=True))
+
+        res = [('add', '', [('author',
+                             {'first_name': 'John', 'last_name': 'Doe'})])]
+
+        assert res == diffed
+
+        first = {}
+        second = {'author': {'last_name': 'Doe', 'first_name': 'John'}}
+        p = PathLimit()
+        diffed = list(diff(first, second, path_limit=p, expand=True))
+        res = [('add', '', [('author', {})]),
+               ('add', 'author', [('first_name', 'John')]),
+               ('add', 'author', [('last_name', 'Doe')])]
+
+        assert len(diffed) == 3
+        for patch in res:
+            assert patch in diffed
+
+    def test_path_limit_deletion(self):
+        first = {'author': {'last_name': 'Doe', 'first_name': 'John'}}
+        second = {}
+        p = PathLimit([('author',)])
+        diffed = list(diff(first, second, path_limit=p, expand=True))
+
+        res = [('remove', '', [('author',
+                                {'first_name': 'John', 'last_name': 'Doe'})])]
+
+        assert res == diffed
+
+    def test_path_limit_change(self):
+        first = {'author': {'last_name': 'Do', 'first_name': 'John'}}
+        second = {'author': {'last_name': 'Doe', 'first_name': 'John'}}
+        p = PathLimit([('author',)])
+        diffed = list(diff(first, second, path_limit=p, expand=True))
+
+        res = [('change',
+                ['author'],
+                ({'first_name': 'John', 'last_name': 'Do'},
+                 {'first_name': 'John', 'last_name': 'Doe'}))]
+
+        assert res == diffed
+
+        first = {'author': {'last_name': 'Do', 'first_name': 'John'}}
+        second = {'author': {'last_name': 'Doe', 'first_name': 'John'}}
+        p = PathLimit()
+        diffed = list(diff(first, second, path_limit=p, expand=True))
+
+        res = [('change', 'author.last_name', ('Do', 'Doe'))]
+
+        assert res == diffed
+
+    def test_expand_addition(self):
+        first = {}
+        second = {'foo': 'bar', 'apple': 'banana'}
+        diffed = list(diff(first, second, expand=True))
+        res = [('add', '', [('foo', 'bar')]),
+               ('add', '', [('apple', 'banana')])]
+
+        assert len(diffed) == 2
+        for patch in res:
+            assert patch in diffed
+
+    def test_expand_deletion(self):
+        first = {'foo': 'bar', 'apple': 'banana'}
+        second = {}
+        diffed = list(diff(first, second, expand=True))
+        res = [('remove', '', [('foo', 'bar')]),
+               ('remove', '', [('apple', 'banana')])]
+
+        assert len(diffed) == 2
+        for patch in res:
+            assert patch in diffed
 
     def test_nodes(self):
         first = {'a': {'b': {'c': 'd'}}}
