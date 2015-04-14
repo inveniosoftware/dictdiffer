@@ -15,7 +15,13 @@ if sys.version_info[0] == 3:  # pragma: no cover (Python 2/3 specific code)
     string_types = str,
     text_type = str
     PY2 = False
+
+    from itertools import zip_longest as _zip_longest
+    izip_longest = _zip_longest
 else:  # pragma: no cover (Python 2/3 specific code)
     string_types = basestring,
     text_type = unicode
     PY2 = True
+
+    from itertools import izip_longest as _zip_longest
+    izip_longest = _zip_longest
