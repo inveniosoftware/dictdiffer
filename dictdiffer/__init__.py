@@ -197,7 +197,8 @@ def diff(first, second, node=None, ignore=None, path_limit=None, expand=False):
 
     else:
         # Compare string and integer types and yield `change` flag.
-        if first != second:
+        # Second test is for NaNs
+        if first != second and [first] != [second]:
             yield CHANGE, dotted_node, (first, second)
 
 
