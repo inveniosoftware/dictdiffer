@@ -198,8 +198,11 @@ class DictDifferTests(unittest.TestCase):
     def test_nan(self):
         value = float('nan')
         diffed = list(diff([value], [value]))
-        assert diffed == []
-    
+        assert [] == diffed
+        
+        diffed = list(diff([value], [3.5]))
+        assert [('change', [0], (value, 3.5))] == diffed
+        
     def test_unicode_keys(self):
         first = {u'привет': 1}
         second = {'hello': 1}
