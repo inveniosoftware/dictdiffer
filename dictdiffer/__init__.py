@@ -12,7 +12,7 @@
 import sys
 import copy
 
-from .utils import dot_lookup, PathLimit
+from .utils import are_different, EPSILON, dot_lookup, PathLimit
 from .version import __version__
 from ._compat import string_types, text_type, PY2
 
@@ -23,7 +23,8 @@ from ._compat import string_types, text_type, PY2
 __all__ = ('diff', 'patch', 'swap', 'revert', 'dot_lookup', '__version__')
 
 
-def diff(first, second, node=None, ignore=None, path_limit=None, expand=False):
+def diff(first, second, node=None, ignore=None, path_limit=None, expand=False,
+         tolerance=EPSILON):
     """Compare two dictionary/list/set objects, and returns a diff result.
 
     Return iterator with differences between two dictionaries.
@@ -65,6 +66,7 @@ def diff(first, second, node=None, ignore=None, path_limit=None, expand=False):
     :param path_limit: List of path limit tuples or dictdiffer.utils.Pathlimit
                        object to limit the diff recursion depth
     :param expand: Expands the patches
+    :param tolerance: threshold to consider 2 values identical
 
     .. versionchanged:: 0.3
        Added *ignore* parameter.
@@ -75,6 +77,7 @@ def diff(first, second, node=None, ignore=None, path_limit=None, expand=False):
     .. versionchanged:: 0.5
        Added *path_limit* parameter.
        Added *expand* paramter.
+       Added *tolerance* parameter.
     """
     if path_limit is not None and not isinstance(path_limit, PathLimit):
         path_limit = PathLimit(path_limit)
@@ -141,7 +144,8 @@ def diff(first, second, node=None, ignore=None, path_limit=None, expand=False):
                                 node=node + [key],
                                 ignore=ignore,
                                 path_limit=path_limit,
-                                expand=expand)
+                                expand=expand,
+                                tolerance=tolerance)
 
                 for diffed in recurred:
                     yield diffed
@@ -162,7 +166,8 @@ def diff(first, second, node=None, ignore=None, path_limit=None, expand=False):
                                         node=node+[key],
                                         ignore=ignore,
                                         path_limit=path_limit,
-                                        expand=expand)
+                                        expand=expand,
+                                        tolerance=tolerance)
 
                         collect_recurred.append(recurred)
 
@@ -196,8 +201,8 @@ def diff(first, second, node=None, ignore=None, path_limit=None, expand=False):
                     (key, first[key]) for key in deletion]
 
     else:
-        # Compare string and integer types and yield `change` flag.
-        if first != second:
+        # Compare string and numerical types and yield `change` flag.
+        if are_different(first, second, tolerance):
             yield CHANGE, dotted_node, (first, second)
 
 

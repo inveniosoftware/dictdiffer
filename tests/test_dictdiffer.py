@@ -54,6 +54,30 @@ class DictDifferTests(unittest.TestCase):
         diffed = next(diff(first, second))
         assert ('change', 'a', ('b', None)) == diffed
 
+        first = {'a': 10.0}
+        second = {'a': 10.5}
+        diffed = next(diff(first, second))
+        assert ('change', 'a', (10.0, 10.5)) == diffed
+
+    def test_tolerance(self):
+        first = {'a': 'b'}
+        second = {'a': 'c'}
+        diffed = next(diff(first, second, tolerance=0.1))
+        assert ('change', 'a', ('b', 'c')) == diffed
+
+        first = {'a': None}
+        second = {'a': 'c'}
+        diffed = next(diff(first, second, tolerance=0.1))
+        assert ('change', 'a', (None, 'c')) == diffed
+
+        first = {'a': 10.0}
+        second = {'a': 10.5}
+        diffed = list(diff(first, second, tolerance=0.1))
+        assert [] == diffed
+
+        diffed = next(diff(first, second, tolerance=0.01))
+        assert ('change', 'a', (10.0, 10.5)) == diffed
+
     def test_path_limit_as_list(self):
         first = {}
         second = {'author': {'last_name': 'Doe', 'first_name': 'John'}}

@@ -1,6 +1,6 @@
-============
- Dictdiffer
-============
+==========
+Dictdiffer
+==========
 .. currentmodule:: dictdiffer
 
 .. raw:: html
@@ -96,6 +96,27 @@ Let's revert the last changes:
     reverted = revert(result, patched)
     assert reverted == first
 
+A tolerance can be used to consider closed values as equal.
+The tolerance parameter only applies for int and float.
+
+Let's try with a tolerance of 10% with the values 10 and 10.5:
+
+.. code-block:: python
+
+    first = {'a': 10.0}
+    second = {'a': 10.5}
+    
+    result = diff(first, second, tolerance=0.1)
+    
+    assert list(result) == []
+    
+Now with a tolerance of 1%:
+
+.. code-block:: python
+
+    result = diff(first, second, tolerance=0.01)
+    
+    assert list(result) == ('change', 'a', (10.0, 10.5))
 
 API
 ===

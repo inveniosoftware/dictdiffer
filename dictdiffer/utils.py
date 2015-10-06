@@ -8,7 +8,11 @@
 
 """Utils gathers helper functions, classes for the dictdiffer module."""
 
-from ._compat import string_types, izip_longest
+import sys
+
+from ._compat import string_types, num_types, izip_longest
+
+EPSILON = sys.float_info.epsilon
 
 
 class WildcardDict(dict):
@@ -245,3 +249,16 @@ def dot_lookup(source, lookup, parent=False):
             key = int(key)
         value = value[key]
     return value
+
+
+def are_different(first, second, tolerance):
+    """Check if 2 values are different.
+
+    In case of numerical values, the tolerance is used to check if the values
+    are different.
+    In all other cases, the difference is straight forward.
+    """
+    if all(map(lambda x: isinstance(x, num_types), [first, second])):
+        return abs(first-second) > tolerance * max(abs(first), abs(second))
+    else:
+        return first != second
