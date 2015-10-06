@@ -12,7 +12,7 @@
 import unittest
 
 from dictdiffer import diff, patch, revert, swap, dot_lookup
-from dictdiffer.utils import PathLimit
+from dictdiffer.utils import PathLimit, convert_to_numeric
 
 
 class DictDifferTests(unittest.TestCase):
@@ -77,6 +77,63 @@ class DictDifferTests(unittest.TestCase):
 
         diffed = next(diff(first, second, tolerance=0.01))
         assert ('change', 'a', (10.0, 10.5)) == diffed
+
+    def test_convert_to_numeric(self):
+        first = {'a': 'c'}
+        second = {'a': 'c'}
+        diffed = list(diff(convert_to_numeric(first),
+                           convert_to_numeric(second)))
+        assert [] == diffed
+
+        first = {'a': 'b'}
+        second = {'a': 'c'}
+        diffed = next(diff(convert_to_numeric(first),
+                           convert_to_numeric(second)))
+        assert ('change', 'a', ('b', 'c')) == diffed
+
+        first = {'a': None}
+        second = {'a': 'c'}
+        diffed = next(diff(convert_to_numeric(first),
+                           convert_to_numeric(second)))
+        assert ('change', 'a', (None, 'c')) == diffed
+
+        first = {'a': 10}
+        second = {'a': '10'}
+        diffed = list(diff(convert_to_numeric(first),
+                           convert_to_numeric(second)))
+        assert [] == diffed
+
+        first = {'a': 10.0}
+        second = {'a': '10.5'}
+        diffed = next(diff(convert_to_numeric(first),
+                           convert_to_numeric(second)))
+        assert ('change', 'a', (10.0, 10.5)) == diffed
+
+        first = {'a': 10.0}
+        second = {'a': '10.5'}
+        diffed = list(diff(convert_to_numeric(first),
+                           convert_to_numeric(second),
+                           tolerance=0.1))
+        assert [] == diffed
+
+        first = {'a': 10.0}
+        second = {'a': '10.5'}
+        diffed = next(diff(convert_to_numeric(first),
+                           convert_to_numeric(second),
+                           tolerance=0.01))
+        assert ('change', 'a', (10.0, 10.5)) == diffed
+
+        first = {'a': ['10', '20']}
+        second = {'a': [10, 20]}
+        diffed = list(diff(convert_to_numeric(first),
+                           convert_to_numeric(second)))
+        assert [] == diffed
+
+        first = {'a': ['10', '20']}
+        second = {'a': [10, 30]}
+        diffed = next(diff(convert_to_numeric(first),
+                           convert_to_numeric(second)))
+        assert ('change', ['a', 1], (20, 30)) == diffed
 
     def test_path_limit_as_list(self):
         first = {}

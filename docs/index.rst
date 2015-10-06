@@ -118,6 +118,27 @@ Now with a tolerance of 1%:
 
     assert list(result) == ('change', 'a', (10.0, 10.5))
 
+When dealing with combined type values, it can be useful to try
+to convert them to numerical ones in order to use the tolerance
+parameter.
+
+The `convert_to_numeric` function will try to convert the dicts values
+to numerical values:
+
+.. code-block:: python
+
+    from dictdiffer.utils import convert_to_numeric
+
+    first = {'a': 10.0}
+    second = {'a': '10.5'}
+    result = next(diff(convert_to_numeric(first), convert_to_numeric(second), tolerance=0.01))
+
+The result will have the string `'10.5'` converted to the float `10.5`:
+
+.. code-block:: python
+
+    assert result == ('change', 'a', (10.0, 10.5))
+
 API
 ===
 
