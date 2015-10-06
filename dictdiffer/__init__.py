@@ -11,6 +11,7 @@
 
 import sys
 import copy
+import math
 
 from .utils import dot_lookup, PathLimit
 from .version import __version__
@@ -197,7 +198,8 @@ def diff(first, second, node=None, ignore=None, path_limit=None, expand=False):
 
     else:
         # Compare string and integer types and yield `change` flag.
-        if first != second:
+        nan_eq = isinstance(first, float) and math.isnan(first) and isinstance(second, float) and math.isnan(second)
+        if first != second and not nan_eq:
             yield CHANGE, dotted_node, (first, second)
 
 
