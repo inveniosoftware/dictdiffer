@@ -2,15 +2,20 @@
  Dictdiffer
 ============
 
-.. image:: https://travis-ci.org/inveniosoftware/dictdiffer.png?branch=master
-    :target: https://travis-ci.org/inveniosoftware/dictdiffer
-.. image:: https://coveralls.io/repos/inveniosoftware/dictdiffer/badge.png?branch=master
-    :target: https://coveralls.io/r/inveniosoftware/dictdiffer
-.. image:: https://pypip.in/v/dictdiffer/badge.png
-   :target: https://pypi.python.org/pypi/dictdiffer/
-.. image:: https://pypip.in/d/dictdiffer/badge.png
-   :target: https://pypi.python.org/pypi/dictdiffer/
+.. image:: https://img.shields.io/travis/inveniosoftware/dictdiffer.svg
+        :target: https://travis-ci.org/inveniosoftware/dictdiffer
 
+.. image:: https://img.shields.io/coveralls/inveniosoftware/dictdiffer.svg
+        :target: https://coveralls.io/r/inveniosoftware/dictdiffer
+
+.. image:: https://img.shields.io/github/tag/inveniosoftware/dictdiffer.svg
+        :target: https://github.com/inveniosoftware/dictdiffer/releases
+
+.. image:: https://img.shields.io/pypi/dm/dictdiffer.svg
+        :target: https://pypi.python.org/pypi/dictdiffer
+
+.. image:: https://img.shields.io/github/license/inveniosoftware/dictdiffer.svg
+        :target: https://github.com/inveniosoftware/dictdiffer/blob/master/LICENSE
 
 About
 =====
@@ -21,6 +26,7 @@ dictionaries.
 
 Installation
 ============
+
 Dictdiffer is on PyPI so all you need is: ::
 
     pip install dictdiffer
@@ -38,6 +44,7 @@ built using Sphinx: ::
 
 Testing
 =======
+
 Running the test suite is as simple as: ::
 
     ./run-tests.sh
