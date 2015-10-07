@@ -69,10 +69,10 @@ class WildcardDict(dict):
             return super(WildcardDict, self).__getitem__(key)
         except KeyError:
             if key[:-1] in self.plus_keys:
-                return super(WildcardDict, self).__getitem__(key[:-1]+('+',))
-            for _key in [key[:-i] for i in range(1, len(key)+1)]:
+                return super(WildcardDict, self).__getitem__(key[:-1] + ('+',))
+            for _key in [key[:-i] for i in range(1, len(key) + 1)]:
                 if _key in self.star_keys:
-                    return super(WildcardDict, self).__getitem__(_key+('*',))
+                    return super(WildcardDict, self).__getitem__(_key + ('*',))
             raise KeyError
 
     def __setitem__(self, key, value):
@@ -94,10 +94,10 @@ class WildcardDict(dict):
         if key in self:
             return key
         if key[:-1] in self.plus_keys:
-            return key[:-1]+('+',)
-        for _key in [key[:-i] for i in range(1, len(key)+1)]:
+            return key[:-1] + ('+',)
+        for _key in [key[:-i] for i in range(1, len(key) + 1)]:
             if _key in self.star_keys:
-                return _key+('*',)
+                return _key + ('*',)
 
         raise KeyError
 
@@ -251,6 +251,42 @@ def dot_lookup(source, lookup, parent=False):
     return value
 
 
+def convert_to_numeric(obj):
+    """
+    Convert an object to a numerical value.
+
+    The behavior depends on the type of obj:
+    - if obj is a dict, trying to convert all value to numerical values.
+    - if obj is a list, trying to convert all elements to numerical values.
+    - if obj is a string, trying to convert it to a numerical value
+    - if obj is a numerical value or None, return obj
+
+    :param obj: object to convert to numerical value
+    """
+    if isinstance(obj, dict):
+        # Compatibility with python 2.6
+        newobj = {}
+        for key, value in obj.items():
+            newobj[key] = convert_to_numeric(value)
+        return newobj
+    elif isinstance(obj, (set, list)):
+        return [convert_to_numeric(value) for value in obj]
+    elif isinstance(obj, num_types):
+        return obj
+    elif isinstance(obj, string_types):
+        value = obj
+        try:
+            obj = int(obj)
+        except ValueError:
+            try:
+                obj = float(obj)
+            except ValueError:
+                obj = value
+        return obj
+    else:
+        return obj
+
+
 def are_different(first, second, tolerance):
     """Check if 2 values are different.
 
@@ -259,6 +295,6 @@ def are_different(first, second, tolerance):
     In all other cases, the difference is straight forward.
     """
     if all(map(lambda x: isinstance(x, num_types), [first, second])):
-        return abs(first-second) > tolerance * max(abs(first), abs(second))
+        return abs(first - second) > tolerance * max(abs(first), abs(second))
     else:
         return first != second
