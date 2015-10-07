@@ -7,11 +7,11 @@ Dictdiffer
 
     <p style="height:22px; margin:0 0 0 2em; float:right">
         <a href="https://travis-ci.org/inveniosoftware/dictdiffer">
-            <img src="https://travis-ci.org/inveniosoftware/dictdiffer.png?branch=master"
+            <img src="https://travis-ci.org/inveniosoftware/dictdiffer.svg?branch=master"
                  alt="travis-ci badge"/>
         </a>
         <a href="https://coveralls.io/r/inveniosoftware/dictdiffer">
-            <img src="https://coveralls.io/repos/inveniosoftware/dictdiffer/badge.png?branch=master"
+            <img src="https://coveralls.io/repos/inveniosoftware/dictdiffer/badge.svg?branch=master"
                  alt="coveralls.io badge"/>
         </a>
     </p>
@@ -105,17 +105,17 @@ Let's try with a tolerance of 10% with the values 10 and 10.5:
 
     first = {'a': 10.0}
     second = {'a': 10.5}
-    
+
     result = diff(first, second, tolerance=0.1)
-    
+
     assert list(result) == []
-    
+
 Now with a tolerance of 1%:
 
 .. code-block:: python
 
     result = diff(first, second, tolerance=0.01)
-    
+
     assert list(result) == ('change', 'a', (10.0, 10.5))
 
 API
