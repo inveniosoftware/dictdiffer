@@ -251,6 +251,46 @@ def dot_lookup(source, lookup, parent=False):
     return value
 
 
+def convert_to_numeric(obj):
+    """
+    Convert an object to a numerical value.
+
+    The behavior depends on the type of obj:
+    - if obj is a dict, trying to convert all value to numerical values.
+    - if obj is a list, trying to convert all elements to numerical values.
+    - if obj is a string, trying to convert it to a numerical value
+    - if obj is a numerical value or None, return obj
+
+    :param obj: object to convert to numerical value
+    """
+    if isinstance(obj, dict):
+        # Compatibility with python 2.6
+        newobj = {}
+        for key, value in obj.iteritems():
+            newobj[key] = convert_to_numeric(value)
+        return newobj
+    elif isinstance(obj, (set, list)):
+        return [convert_to_numeric(value) for value in obj]
+    elif isinstance(obj, num_types):
+        return obj
+    elif isinstance(obj, string_types):
+        value = obj
+        try:
+            obj = int(obj)
+        except ValueError:
+            try:
+                obj = float(obj)
+            except ValueError:
+                obj = value
+            pass
+        return obj
+    elif obj is None:
+        return obj
+    else:
+        raise TypeError('Type {0} cannot be converted to numeric'\
+                        .format(type(obj)))
+
+
 def are_different(first, second, tolerance):
     """Check if 2 values are different.
 
