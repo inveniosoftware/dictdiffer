@@ -1,6 +1,12 @@
 Changes
 =======
 
+Version 0.5.0 (released 2016-01-04)
+
+- Adds tolerance parameter used when user wants to treat closed values
+  as equals
+- Adds support for comparing numerical values and NaN. (#54) (#55)
+
 Version 0.4.0 (released 2015-03-11)
 
 - Adds support for diffing and patching of sets. (#44)
@@ -9,19 +15,19 @@ Version 0.4.0 (released 2015-03-11)
   provided. (#50)
 - PEP8 improvements.
 
-Version 0.3.0 (released 2014-11-05):
+Version 0.3.0 (released 2014-11-05)
 
 - Adds ignore argument to `diff` function that allows skipping check
   on specified keys. (#34 #35)
 - Fix for diffing of dict or list subclasses. (#37)
 - Better instance checking of diffing objects. (#39)
 
-Version 0.2.0 (released 2014-09-29):
+Version 0.2.0 (released 2014-09-29)
 
 - Fix for empty list instructions. (#30)
 - Regression test for empty list instructions.
 
-Version 0.1.0 (released 2014-09-01):
+Version 0.1.0 (released 2014-09-01)
 
 - Fix for list removal issues during patching caused by wrong
   iteration. (#10)
@@ -33,12 +39,12 @@ Version 0.1.0 (released 2014-09-01):
 - Initial release of documentation on ReadTheDocs. (#21 #24)
 - Support for Python 3. (#15)
 
-Version 0.0.4 (released 2014-01-04):
+Version 0.0.4 (released 2014-01-04)
 
 - List diff behavior treats lists as lists instead of sets. (#3)
 - Differed typed objects are flagged as `changed` now.
 - Swap function refactored.
 
-Version 0.0.3 (released 2013-05-26):
+Version 0.0.3 (released 2013-05-26)
 
 - Initial public release on PyPI.
