@@ -16,7 +16,6 @@ EPSILON = sys.float_info.epsilon
 
 
 class WildcardDict(dict):
-
     """A dictionary that provides special wildcard keys.
 
     Those wildcards are:
@@ -103,7 +102,6 @@ class WildcardDict(dict):
 
 
 class PathLimit(object):
-
     """Class to limit recursion depth during the dictdiffer.diff execution."""
 
     def __init__(self, path_limits=[], final_key=None):

@@ -16,7 +16,6 @@ from .utils import PathLimit
 
 
 class Merger(object):
-
     """Class wrapping steps of the automated merging process.
 
     Usage:

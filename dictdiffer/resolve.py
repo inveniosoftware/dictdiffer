@@ -12,7 +12,6 @@ from .utils import get_path
 
 
 class UnresolvedConflictsException(Exception):
-
     """Exception raised in case of an unresolveable conflict.
 
     Exception raised in case of conflicts, that can not be resolved using
@@ -41,7 +40,6 @@ class UnresolvedConflictsException(Exception):
 
 
 class NoFurtherResolutionException(Exception):
-
     """Exception raised to stop the automated resolution process.
 
     Raised in case that the automatic conflict resolution process should stop
@@ -52,7 +50,6 @@ class NoFurtherResolutionException(Exception):
 
 
 class Resolver(object):
-
     """Class handling the conflict resolution process.
 
     Presents the given conflicts to actions designed to solve them.
