@@ -1,6 +1,6 @@
 # This file is part of Dictdiffer.
 #
-# Copyright (C) 2014 CERN.
+# Copyright (C) 2014, 2016 CERN.
 #
 # Dictdiffer is free software; you can redistribute it and/or modify
 # it under the terms of the MIT License; see LICENSE file for more
@@ -15,6 +15,7 @@ python:
   - "2.7"
   - "3.3"
   - "3.4"
+  - "3.5"
 
 install:
   - pip install --upgrade pip
@@ -32,3 +33,13 @@ after_success:
 
 notifications:
   email: false
+
+deploy:
+  provider: pypi
+  user: jirikuncar
+  password:
+    secure: tntrBrJuE3sqJcLxxbzPGj6zltrP/7GgSOFt7q/wn20JWc1SHhutkFqzO2DMShT4YZBlCwwL4jCLsVdMtARCsBIh/p2glTDLFAKC7DfSqwzsnGk/6Q5uyB7NOn7/GPXItyGEJB8cb6QgsMlpMCqv7+mjrL8+HhWVCaZz4B9lzeY=
+  distributions: "sdist bdist_wheel"
+  on:
+    tags: true
+    repo: inveniosoftware/dictdiffer
