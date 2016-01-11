@@ -11,6 +11,10 @@
 
 import sys
 import copy
+try:
+    from collections import Mapping
+except ImportError:
+    from collections.abc import Mapping
 
 from .utils import are_different, EPSILON, dot_lookup, PathLimit
 from .version import __version__
@@ -90,7 +94,7 @@ def diff(first, second, node=None, ignore=None, path_limit=None, expand=False,
 
     differ = False
 
-    if isinstance(first, dict) and isinstance(second, dict):
+    if isinstance(first, Mapping) and isinstance(second, Mapping):
         # dictionaries are not hashable, we can't use sets
         def check(key):
             """Test if key in current node should be ignored."""
