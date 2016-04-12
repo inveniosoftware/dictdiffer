@@ -1,7 +1,7 @@
 # This file is part of Dictdiffer.
 #
 # Copyright (C) 2013 Fatih Erikli.
-# Copyright (C) 2013, 2014, 2015 CERN.
+# Copyright (C) 2013, 2014, 2015, 2016 CERN.
 #
 # Dictdiffer is free software; you can redistribute it and/or modify
 # it under the terms of the MIT License; see LICENSE file for more
@@ -14,13 +14,18 @@ import copy
 
 from .utils import are_different, EPSILON, dot_lookup, PathLimit
 from .version import __version__
-from ._compat import string_types, text_type, PY2
+from ._compat import MutableMapping, MutableSet, MutableSequence, \
+    string_types, text_type, PY2
 
 
 (ADD, REMOVE, CHANGE) = (
     'add', 'remove', 'change')
 
 __all__ = ('diff', 'patch', 'swap', 'revert', 'dot_lookup', '__version__')
+
+DICT_TYPE = MutableMapping
+LIST_TYPE = MutableSequence
+SET_TYPE = MutableSet
 
 
 def diff(first, second, node=None, ignore=None, path_limit=None, expand=False,
@@ -90,7 +95,7 @@ def diff(first, second, node=None, ignore=None, path_limit=None, expand=False,
 
     differ = False
 
-    if isinstance(first, dict) and isinstance(second, dict):
+    if isinstance(first, DICT_TYPE) and isinstance(second, DICT_TYPE):
         # dictionaries are not hashable, we can't use sets
         def check(key):
             """Test if key in current node should be ignored."""
@@ -99,7 +104,7 @@ def diff(first, second, node=None, ignore=None, path_limit=None, expand=False,
             else:
                 new_key = key
             return ignore is None \
-                or (node + [key] if isinstance(dotted_node, list)
+                or (node + [key] if isinstance(dotted_node, LIST_TYPE)
                     else '.'.join(node + [str(new_key)])) not in ignore
 
         intersection = [k for k in first if k in second and check(k)]
@@ -108,7 +113,7 @@ def diff(first, second, node=None, ignore=None, path_limit=None, expand=False,
 
         differ = True
 
-    elif isinstance(first, list) and isinstance(second, list):
+    elif isinstance(first, LIST_TYPE) and isinstance(second, LIST_TYPE):
         len_first = len(first)
         len_second = len(second)
 
@@ -118,7 +123,7 @@ def diff(first, second, node=None, ignore=None, path_limit=None, expand=False,
 
         differ = True
 
-    elif isinstance(first, set) and isinstance(second, set):
+    elif isinstance(first, SET_TYPE) and isinstance(second, SET_TYPE):
 
         intersection = {}
         addition = second - first
@@ -155,7 +160,8 @@ def diff(first, second, node=None, ignore=None, path_limit=None, expand=False,
                 collect = []
                 collect_recurred = []
                 for key in addition:
-                    if not isinstance(second[key], (set, list, dict)):
+                    if not isinstance(second[key], (
+                            SET_TYPE, LIST_TYPE, DICT_TYPE)):
                         collect.append((key, second[key]))
                     elif path_limit.path_is_limit(node+[key]):
                         collect.append((key, second[key]))
@@ -213,9 +219,9 @@ def patch(diff_result, destination):
     def add(node, changes):
         for key, value in changes:
             dest = dot_lookup(destination, node)
-            if isinstance(dest, list):
+            if isinstance(dest, LIST_TYPE):
                 dest.insert(key, value)
-            elif isinstance(dest, set):
+            elif isinstance(dest, SET_TYPE):
                 dest |= value
             else:
                 dest[key] = value
@@ -226,7 +232,7 @@ def patch(diff_result, destination):
             last_node = node.split('.')[-1]
         else:
             last_node = node[-1]
-        if isinstance(dest, list):
+        if isinstance(dest, LIST_TYPE):
             last_node = int(last_node)
         _, value = changes
         dest[last_node] = value
@@ -234,7 +240,7 @@ def patch(diff_result, destination):
     def remove(node, changes):
         for key, value in changes:
             dest = dot_lookup(destination, node)
-            if isinstance(dest, set):
+            if isinstance(dest, SET_TYPE):
                 dest -= value
             else:
                 del dest[key]

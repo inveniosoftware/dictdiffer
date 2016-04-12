@@ -3,7 +3,7 @@
 # This file is part of Dictdiffer.
 #
 # Copyright (C) 2013 Fatih Erikli.
-# Copyright (C) 2013, 2014, 2015 CERN.
+# Copyright (C) 2013, 2014, 2015, 2016 CERN.
 #
 # Dictdiffer is free software; you can redistribute it and/or modify
 # it under the terms of the MIT License; see LICENSE file for more
@@ -12,6 +12,7 @@
 import unittest
 
 from dictdiffer import diff, patch, revert, swap, dot_lookup
+from dictdiffer._compat import MutableMapping, MutableSet, MutableSequence
 from dictdiffer.utils import PathLimit
 
 
@@ -363,6 +364,78 @@ class DictDifferTests(unittest.TestCase):
 
         diffed = next(diff(first, second))
         assert ('change', [2014, 4, 'sum'], (-12140.0, -12141.0)) == diffed
+
+    def test_collection_subclasses(self):
+        class DictA(MutableMapping):
+
+            def __init__(self, *args, **kwargs):
+                self.__dict__.update(*args, **kwargs)
+
+            def __setitem__(self, key, value):
+                self.__dict__[key] = value
+
+            def __getitem__(self, key):
+                return self.__dict__[key]
+
+            def __delitem__(self, key):
+                del self.__dict__[key]
+
+            def __iter__(self):
+                return iter(self.__dict__)
+
+            def __len__(self):
+                return len(self.__dict__)
+
+        class DictB(MutableMapping):
+
+            def __init__(self, *args, **kwargs):
+                self.__dict__.update(*args, **kwargs)
+
+            def __setitem__(self, key, value):
+                self.__dict__[key] = value
+
+            def __getitem__(self, key):
+                return self.__dict__[key]
+
+            def __delitem__(self, key):
+                del self.__dict__[key]
+
+            def __iter__(self):
+                return iter(self.__dict__)
+
+            def __len__(self):
+                return len(self.__dict__)
+
+        class ListA(MutableSequence):
+
+            def __init__(self, *args, **kwargs):
+                self._list = list(*args, **kwargs)
+
+            def __getitem__(self, index):
+                return self._list[index]
+
+            def __setitem__(self, index, value):
+                self._list[index] = value
+
+            def __delitem__(self, index):
+                del self._list[index]
+
+            def __iter__(self):
+                for value in self._list:
+                    yield value
+
+            def __len__(self):
+                return len(self._list)
+
+            def insert(self, index, value):
+                self._list.insert(index, value)
+
+        daa = DictA(a=ListA(['a', 'A']))
+        dba = DictB(a=ListA(['a', 'A']))
+        dbb = DictB(a=ListA(['b', 'A']))
+        assert list(diff(daa, dba)) == []
+        assert list(diff(daa, dbb)) == [('change', ['a', 0], ('a', 'b'))]
+        assert list(diff(dba, dbb)) == [('change', ['a', 0], ('a', 'b'))]
 
 
 class DiffPatcherTests(unittest.TestCase):
