@@ -21,7 +21,6 @@ class ConflictTest(unittest.TestCase):
         self.assertEqual(c.first_patch, p1)
         self.assertEqual(c.second_patch, p2)
         self.assertEqual(c.take, None)
-        self.assertFalse(c.handled)
 
     def test_take_patch(self):
         p1 = ('add', '', [(1, 1)])

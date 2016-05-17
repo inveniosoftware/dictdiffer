@@ -24,19 +24,20 @@ class Unifier(object):
         :param conflicts: list of Conflict objects
         """
         self.unified_patches = []
-        sorted_patches = sorted(first_patches + second_patches, key=get_path)
-
         self._build_index(conflicts)
+
+        sorted_patches = sorted(first_patches + second_patches, key=get_path)
 
         for patch in sorted_patches:
             conflict = self._index.get(nested_hash(patch))
 
+            # Apply only the patches that were taken as part of conflict
+            # resolution.
             if conflict:
-                if not conflict.handled:
-                    conflict.handled = True
-                    self.unified_patches.append(conflict.take_patch())
-            else:
-                self.unified_patches.append(patch)
+                if conflict.take_patch() != patch:
+                    continue
+
+            self.unified_patches.append(patch)
 
         return self.unified_patches
 
