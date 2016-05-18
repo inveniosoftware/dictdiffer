@@ -10,7 +10,7 @@
 
 import sys
 
-from ._compat import string_types, num_types, izip_longest
+from ._compat import izip_longest, num_types, string_types
 
 EPSILON = sys.float_info.epsilon
 
@@ -24,6 +24,7 @@ class WildcardDict(dict):
     The intended use case of this are dictionaries, that utilize tuples as
     keys.
 
+        >>> from dictdiffer.utils import WildcardDict
         >>> w = WildcardDict({('foo', '*'): '* card',
         ...                   ('banana', '+'): '+ card'})
         >>> w[ ('foo', 'bar', 'baz') ]
@@ -213,6 +214,7 @@ def dot_lookup(source, lookup, parent=False):
 
     Recursively find value by lookup key split by '.'.
 
+        >>> from dictdiffer.utils import dot_lookup
         >>> dot_lookup({'a': {'b': 'hello'}}, 'a.b')
         'hello'
 

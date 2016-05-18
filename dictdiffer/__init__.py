@@ -34,6 +34,7 @@ def diff(first, second, node=None, ignore=None, path_limit=None, expand=False,
 
     Return iterator with differences between two dictionaries.
 
+        >>> from dictdiffer import diff
         >>> result = diff({'a':'b'}, {'a':'c'})
         >>> list(result)
         [('change', 'a', ('b', 'c'))]
@@ -267,6 +268,7 @@ def swap(diff_result):
 
     In addition, swap the changed values for `change` flag.
 
+        >>> from dictdiffer import swap
         >>> swapped = swap([('add', 'a.b.c', ('a', 'b'))])
         >>> next(swapped)
         ('remove', 'a.b.c', ('a', 'b'))
@@ -301,6 +303,7 @@ def revert(diff_result, destination):
 
     Usage example:
 
+        >>> from dictdiffer import diff, revert
         >>> first = {'a': 'b'}
         >>> second = {'a': 'c'}
         >>> revert(diff(first, second), second)

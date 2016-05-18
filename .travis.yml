@@ -10,6 +10,9 @@ sudo: false
 
 language: python
 
+cache:
+  - pip
+
 python:
   - "2.6"
   - "2.7"
@@ -17,16 +20,15 @@ python:
   - "3.4"
   - "3.5"
 
+before_install:
+  - "travis_retry pip install --upgrade pip setuptools py"
+  - "travis_retry pip install twine wheel coveralls requirements-builder"
+
 install:
-  - pip install --upgrade pip
-  - pip install coveralls pep257
-  - pip install pytest pytest-pep8 pytest-cov pytest-cache
-  - pip install -e .[docs]
+  - "travis_retry pip install -e .[all]"
 
 script:
-  - pep257 dictdiffer
-  - "sphinx-build -qnNW docs docs/_build/html"
-  - python setup.py test
+  - "./run-tests.sh"
 
 after_success:
   - coveralls

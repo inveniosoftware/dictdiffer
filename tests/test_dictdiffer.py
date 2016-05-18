@@ -11,8 +11,8 @@
 
 import unittest
 
-from dictdiffer import diff, patch, revert, swap, dot_lookup
-from dictdiffer._compat import MutableMapping, MutableSet, MutableSequence
+from dictdiffer import diff, dot_lookup, patch, revert, swap
+from dictdiffer._compat import MutableMapping, MutableSequence, MutableSet
 from dictdiffer.utils import PathLimit
 
 

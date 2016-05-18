@@ -10,8 +10,8 @@
 
 from . import diff
 from .conflict import ConflictFinder
-from .unify import Unifier
 from .resolve import Resolver, UnresolvedConflictsException
+from .unify import Unifier
 from .utils import PathLimit
 
 

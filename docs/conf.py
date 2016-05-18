@@ -28,7 +28,6 @@ import os
 import re
 import sys
 
-
 _html_theme = "sphinx_rtd_theme"
 _html_theme_path = []
 try:

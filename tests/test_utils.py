@@ -8,9 +8,8 @@
 
 import unittest
 
-from dictdiffer.utils import (WildcardDict, PathLimit, create_dotted_node,
-                              get_path, is_super_path, dot_lookup,
-                              nested_hash)
+from dictdiffer.utils import (PathLimit, WildcardDict, create_dotted_node,
+                              dot_lookup, get_path, is_super_path, nested_hash)
 
 
 class UtilsTest(unittest.TestCase):

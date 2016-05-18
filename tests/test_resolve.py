@@ -9,8 +9,8 @@
 import unittest
 
 from dictdiffer.conflict import Conflict
-from dictdiffer.resolve import (Resolver, UnresolvedConflictsException,
-                                NoFurtherResolutionException)
+from dictdiffer.resolve import (NoFurtherResolutionException, Resolver,
+                                UnresolvedConflictsException)
 
 
 class UnresolvedConflictsExceptionTest(unittest.TestCase):
@@ -110,13 +110,13 @@ class ResolverTest(unittest.TestCase):
                           r.resolve_conflicts, [p1], [p2], c)
 
         # Failing action
-        r = Resolver({('foo', 0): lambda w, x, y, z: False})
+        r = Resolver({('foo', 0): lambda *args: False})
 
         self.assertRaises(UnresolvedConflictsException,
                           r.resolve_conflicts, [p1], [p2], c)
 
         # No further resolution exception
-        def no_further(w, x, y, z):
+        def no_further(*args):
             raise NoFurtherResolutionException
 
         r = Resolver({('foo', 0): no_further})
@@ -124,7 +124,7 @@ class ResolverTest(unittest.TestCase):
                           r.resolve_conflicts, [p1], [p2], c)
 
         # Succesful
-        r = Resolver({('foo', 0): lambda w, x, y, z: True})
+        r = Resolver({('foo', 0): lambda *args: True})
         r.resolve_conflicts([p1], [p2], c)
 
         self.assertEqual(r.unresolved_conflicts, [])

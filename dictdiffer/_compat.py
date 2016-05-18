@@ -10,7 +10,6 @@
 
 import sys
 
-
 if sys.version_info[0] == 3:  # pragma: no cover (Python 2/3 specific code)
     string_types = str,
     text_type = str
