@@ -25,7 +25,6 @@ class Conflict(object):
         self.first_patch = patch1
         self.second_patch = patch2
         self.take = None
-        self.handled = False
 
     def take_patch(self):
         """Return the patch determined by the *take* attribute."""
