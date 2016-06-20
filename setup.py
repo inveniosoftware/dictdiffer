@@ -32,6 +32,9 @@ tests_require = [
 ]
 
 extras_require = {
+    ':python_version=="2.6"': [
+        'unittest2>=1.1.0',
+    ],
     'docs': [
         'Sphinx>=1.3',
         'sphinx-rtd-theme>=0.1.9',
@@ -43,7 +46,9 @@ extras_require = {
 }
 
 extras_require['all'] = []
-for reqs in extras_require.values():
+for key, reqs in extras_require.items():
+    if ':' == key[0]:
+        continue
     extras_require['all'].extend(reqs)
 
 setup_requires = [

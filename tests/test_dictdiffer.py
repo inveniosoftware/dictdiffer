@@ -15,6 +15,9 @@ from dictdiffer import HAS_NUMPY, diff, dot_lookup, patch, revert, swap
 from dictdiffer._compat import MutableMapping, MutableSequence, MutableSet
 from dictdiffer.utils import PathLimit
 
+if not hasattr(unittest, 'skipIf'):
+    import unittest2 as unittest  # Python 2.6 support
+
 
 class DictDifferTests(unittest.TestCase):
     def test_addition(self):
