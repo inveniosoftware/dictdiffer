@@ -36,6 +36,9 @@ extras_require = {
         'Sphinx>=1.3',
         'sphinx-rtd-theme>=0.1.9',
     ],
+    'numpy': [
+        'numpy>=1.11.0',
+    ],
     'tests': tests_require,
 }
 

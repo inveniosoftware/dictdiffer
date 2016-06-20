@@ -11,7 +11,7 @@
 
 import unittest
 
-from dictdiffer import diff, dot_lookup, patch, revert, swap
+from dictdiffer import HAS_NUMPY, diff, dot_lookup, patch, revert, swap
 from dictdiffer._compat import MutableMapping, MutableSequence, MutableSet
 from dictdiffer.utils import PathLimit
 
@@ -335,6 +335,15 @@ class DictDifferTests(unittest.TestCase):
         """Diff for the same list should be empty."""
         first = {1: [1]}
         assert len(list(diff(first, first))) == 0
+
+    @unittest.skipIf(not HAS_NUMPY, 'NumPy is not installed')
+    def test_numpy_array(self):
+        """Compare NumPy arrays (#68)."""
+        import numpy as np
+        first = np.array([1, 2, 3])
+        second = np.array([1, 2, 4])
+        result = list(diff(first, second))
+        assert result == [('change', [2], (3, 4))]
 
     def test_dict_subclasses(self):
         class Foo(dict):

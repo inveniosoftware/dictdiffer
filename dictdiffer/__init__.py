@@ -9,23 +9,35 @@
 
 """Dictdiffer is a helper module to diff and patch dictionaries."""
 
-import sys
 import copy
+import sys
 
-from .utils import are_different, EPSILON, dot_lookup, PathLimit
+import pkg_resources
+
+from ._compat import (PY2, MutableMapping, MutableSequence, MutableSet,
+                      string_types, text_type)
+from .utils import EPSILON, PathLimit, are_different, dot_lookup
 from .version import __version__
-from ._compat import MutableMapping, MutableSet, MutableSequence, \
-    string_types, text_type, PY2
-
 
 (ADD, REMOVE, CHANGE) = (
     'add', 'remove', 'change')
 
 __all__ = ('diff', 'patch', 'swap', 'revert', 'dot_lookup', '__version__')
 
-DICT_TYPE = MutableMapping
-LIST_TYPE = MutableSequence
-SET_TYPE = MutableSet
+DICT_TYPES = (MutableMapping, )
+LIST_TYPES = (MutableSequence, )
+SET_TYPES = (MutableSet, )
+
+try:
+    pkg_resources.get_distribution('numpy')
+except pkg_resources.DistributionNotFound:  # pragma: no cover
+    HAS_NUMPY = False
+else:
+    HAS_NUMPY = True
+
+    import numpy
+
+    LIST_TYPES += (numpy.ndarray, )
 
 
 def diff(first, second, node=None, ignore=None, path_limit=None, expand=False,
@@ -96,7 +108,7 @@ def diff(first, second, node=None, ignore=None, path_limit=None, expand=False,
 
     differ = False
 
-    if isinstance(first, DICT_TYPE) and isinstance(second, DICT_TYPE):
+    if isinstance(first, DICT_TYPES) and isinstance(second, DICT_TYPES):
         # dictionaries are not hashable, we can't use sets
         def check(key):
             """Test if key in current node should be ignored."""
@@ -105,7 +117,7 @@ def diff(first, second, node=None, ignore=None, path_limit=None, expand=False,
             else:
                 new_key = key
             return ignore is None \
-                or (node + [key] if isinstance(dotted_node, LIST_TYPE)
+                or (node + [key] if isinstance(dotted_node, LIST_TYPES)
                     else '.'.join(node + [str(new_key)])) not in ignore
 
         intersection = [k for k in first if k in second and check(k)]
@@ -114,7 +126,7 @@ def diff(first, second, node=None, ignore=None, path_limit=None, expand=False,
 
         differ = True
 
-    elif isinstance(first, LIST_TYPE) and isinstance(second, LIST_TYPE):
+    elif isinstance(first, LIST_TYPES) and isinstance(second, LIST_TYPES):
         len_first = len(first)
         len_second = len(second)
 
@@ -124,7 +136,7 @@ def diff(first, second, node=None, ignore=None, path_limit=None, expand=False,
 
         differ = True
 
-    elif isinstance(first, SET_TYPE) and isinstance(second, SET_TYPE):
+    elif isinstance(first, SET_TYPES) and isinstance(second, SET_TYPES):
 
         intersection = {}
         addition = second - first
@@ -161,8 +173,8 @@ def diff(first, second, node=None, ignore=None, path_limit=None, expand=False,
                 collect = []
                 collect_recurred = []
                 for key in addition:
-                    if not isinstance(second[key], (
-                            SET_TYPE, LIST_TYPE, DICT_TYPE)):
+                    if not isinstance(second[key],
+                                      SET_TYPES + LIST_TYPES + DICT_TYPES):
                         collect.append((key, second[key]))
                     elif path_limit.path_is_limit(node+[key]):
                         collect.append((key, second[key]))
@@ -220,9 +232,9 @@ def patch(diff_result, destination):
     def add(node, changes):
         for key, value in changes:
             dest = dot_lookup(destination, node)
-            if isinstance(dest, LIST_TYPE):
+            if isinstance(dest, LIST_TYPES):
                 dest.insert(key, value)
-            elif isinstance(dest, SET_TYPE):
+            elif isinstance(dest, SET_TYPES):
                 dest |= value
             else:
                 dest[key] = value
@@ -233,7 +245,7 @@ def patch(diff_result, destination):
             last_node = node.split('.')[-1]
         else:
             last_node = node[-1]
-        if isinstance(dest, LIST_TYPE):
+        if isinstance(dest, LIST_TYPES):
             last_node = int(last_node)
         _, value = changes
         dest[last_node] = value
@@ -241,7 +253,7 @@ def patch(diff_result, destination):
     def remove(node, changes):
         for key, value in changes:
             dest = dot_lookup(destination, node)
-            if isinstance(dest, SET_TYPE):
+            if isinstance(dest, SET_TYPES):
                 dest -= value
             else:
                 del dest[key]
