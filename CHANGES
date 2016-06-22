@@ -1,6 +1,15 @@
 Changes
 =======
 
+Version 0.6.0 (released 2016-06-22)
+
+- Adds support for comparing NumPy arrays.  (#68)
+- Adds support for comparing mutable mappings, sequences and sets from
+  `collections.abs` module.  (#67)
+- Updates package structure, sorts imports and runs doctests.
+- Fixes order in which handled conflicts are unified so that the
+  Merger's unified_patches can be always applied.
+
 Version 0.5.0 (released 2016-01-04)
 
 - Adds tolerance parameter used when user wants to treat closed values

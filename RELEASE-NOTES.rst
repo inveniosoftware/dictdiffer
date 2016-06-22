@@ -1,8 +1,8 @@
 ===================
- Dictdiffer v0.5.0
+ Dictdiffer v0.6.0
 ===================
 
-Dictdiffer v0.5.0 was released on January 4, 2016.
+Dictdiffer v0.6.0 was released on June 22, 2016.
 
 About
 -----
@@ -13,23 +13,30 @@ dictionaries.
 New features
 ------------
 
-- Adds tolerance parameter used when user wants to treat closed values
-  as equals
+- Adds support for comparing NumPy arrays.  (#68)
+- Adds support for comparing mutable mappings, sequences and sets from
+  `collections.abs` module.  (#67)
 
 Improved features
 -----------------
 
-- Adds support for comparing numerical values and NaN. (#54) (#55)
+- Updates package structure, sorts imports and runs doctests.
+
+Bug fixes
+---------
+
+- Fixes order in which handled conflicts are unified so that the
+  Merger's unified_patches can be always applied.
 
 Installation
 ------------
 
-   $ pip install dictdiffer==0.5.0
+   $ pip install dictdiffer==0.6.0
 
 Documentation
 -------------
 
-   http://dictdiffer.readthedocs.org/en/v0.5.0
+   http://dictdiffer.readthedocs.org/en/v0.6.0
 
 Happy hacking and thanks for flying Dictdiffer.
 
