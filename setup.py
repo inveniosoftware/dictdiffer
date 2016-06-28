@@ -71,7 +71,7 @@ setup(
     description=__doc__,
     long_description=readme + '\n\n' + history,
     author='Invenio Collaboration',
-    author_email='info@invenio-software.org',
+    author_email='info@inveniosoftware.org',
     url='https://github.com/inveniosoftware/dictdiffer',
     packages=['dictdiffer'],
     zip_safe=False,
