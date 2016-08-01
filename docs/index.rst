@@ -3,18 +3,20 @@ Dictdiffer
 ==========
 .. currentmodule:: dictdiffer
 
-.. raw:: html
+.. image:: https://img.shields.io/travis/inveniosoftware/dictdiffer.svg
+        :target: https://travis-ci.org/inveniosoftware/dictdiffer
 
-    <p style="height:22px; margin:0 0 0 2em; float:right">
-        <a href="https://travis-ci.org/inveniosoftware/dictdiffer">
-            <img src="https://travis-ci.org/inveniosoftware/dictdiffer.svg?branch=master"
-                 alt="travis-ci badge"/>
-        </a>
-        <a href="https://coveralls.io/r/inveniosoftware/dictdiffer">
-            <img src="https://coveralls.io/repos/inveniosoftware/dictdiffer/badge.svg?branch=master"
-                 alt="coveralls.io badge"/>
-        </a>
-    </p>
+.. image:: https://img.shields.io/coveralls/inveniosoftware/dictdiffer.svg
+        :target: https://coveralls.io/r/inveniosoftware/dictdiffer
+
+.. image:: https://img.shields.io/github/tag/inveniosoftware/dictdiffer.svg
+        :target: https://github.com/inveniosoftware/dictdiffer/releases
+
+.. image:: https://img.shields.io/pypi/dm/dictdiffer.svg
+        :target: https://pypi.python.org/pypi/dictdiffer
+
+.. image:: https://img.shields.io/github/license/inveniosoftware/dictdiffer.svg
+        :target: https://github.com/inveniosoftware/dictdiffer/blob/master/LICENSE
 
 Dictdiffer is a helper module that helps you to diff and patch
 dictionaries.

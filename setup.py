@@ -36,7 +36,7 @@ extras_require = {
         'unittest2>=1.1.0',
     ],
     'docs': [
-        'Sphinx>=1.3',
+        'Sphinx>=1.4.4',
         'sphinx-rtd-theme>=0.1.9',
     ],
     'numpy': [

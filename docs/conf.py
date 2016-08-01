@@ -2,7 +2,7 @@
 #
 # This file is part of Dictdiffer.
 #
-# Copyright (C) 2014 CERN.
+# Copyright (C) 2014, 2016 CERN.
 #
 # Dictdiffer is free software; you can redistribute it and/or modify
 # it under the terms of the MIT License; see LICENSE file for more
@@ -47,12 +47,17 @@ except ImportError:
 # If your documentation needs a minimal Sphinx version, state it here.
 #needs_sphinx = '1.0'
 
+# Do not warn on external images.
+suppress_warnings = ['image.nonlocal_uri']
+
 # Add any Sphinx extension module names here, as strings. They can be
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom
 # ones.
 extensions = [
     'sphinx.ext.autodoc',
+    'sphinx.ext.coverage',
     'sphinx.ext.doctest',
+    'sphinx.ext.intersphinx',
 ]
 
 # Add any paths that contain templates here, relative to this directory.
@@ -77,7 +82,8 @@ copyright = u'2014, Fatih Erikli'
 #
 # The short X.Y version.
 
-with open(os.path.join('..', 'dictdiffer', 'version.py'), 'rt') as f:
+with open(os.path.join(os.path.dirname(__file__), '..', 'dictdiffer',
+                       'version.py'), 'rt') as f:
     version = re.search(
         '__version__\s*=\s*"(?P<version>.*)"\n',
         f.read()
@@ -289,3 +295,9 @@ texinfo_documents = [
 
 # If true, do not generate a @detailmenu in the "Top" node's menu.
 #texinfo_no_detailmenu = False
+
+# Example configuration for intersphinx: refer to the Python standard library.
+
+intersphinx_mapping = {
+    'python': ('https://docs.python.org/2.7', None),
+}

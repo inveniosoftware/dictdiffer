@@ -46,45 +46,56 @@ def diff(first, second, node=None, ignore=None, path_limit=None, expand=False,
 
     Return iterator with differences between two dictionaries.
 
-        >>> from dictdiffer import diff
-        >>> result = diff({'a':'b'}, {'a':'c'})
-        >>> list(result)
-        [('change', 'a', ('b', 'c'))]
+    >>> from dictdiffer import diff
+    >>> result = diff({'a':'b'}, {'a':'c'})
+    >>> list(result)
+    [('change', 'a', ('b', 'c'))]
 
-    PathLimit:
+    The keys can be skipped from difference calculation when they are included
+    in ``ignore`` argument of type :class:`collections.Container`.
 
-        >>> list(diff({}, {'a': {'b': 'c'}}))
-        [('add', '', [('a', {'b': 'c'})])]
+    >>> list(diff({'a': 1, 'b': 2}, {'a': 3, 'b': 4}, ignore=set(['a'])))
+    [('change', 'b', (2, 4))]
+    >>> class IgnoreCase(set):
+    ...     def __contains__(self, key):
+    ...         return set.__contains__(self, str(key).lower())
+    >>> list(diff({'a': 1, 'b': 2}, {'A': 3, 'b': 4}, ignore=IgnoreCase('a')))
+    [('change', 'b', (2, 4))]
 
-        >>> from dictdiffer.utils import PathLimit
-        >>> list(diff({}, {'a': {'b': 'c'}}, path_limit=PathLimit()))
-        [('add', '', [('a', {})]), ('add', 'a', [('b', 'c')])]
+    The difference calculation can be limitted to certain path:
 
-        >>> from dictdiffer.utils import PathLimit
-        >>> list(diff({}, {'a': {'b': 'c'}}, path_limit=PathLimit([('a',)])))
-        [('add', '', [('a', {'b': 'c'})])]
+    >>> list(diff({}, {'a': {'b': 'c'}}))
+    [('add', '', [('a', {'b': 'c'})])]
 
-        >>> from dictdiffer.utils import PathLimit
-        >>> list(diff({}, {'a': {'b': 'c'}},
-        ...           path_limit=PathLimit([('a', 'b')])))
-        [('add', '', [('a', {})]), ('add', 'a', [('b', 'c')])]
+    >>> from dictdiffer.utils import PathLimit
+    >>> list(diff({}, {'a': {'b': 'c'}}, path_limit=PathLimit()))
+    [('add', '', [('a', {})]), ('add', 'a', [('b', 'c')])]
 
-    Expand:
+    >>> from dictdiffer.utils import PathLimit
+    >>> list(diff({}, {'a': {'b': 'c'}}, path_limit=PathLimit([('a',)])))
+    [('add', '', [('a', {'b': 'c'})])]
 
-        ... list(diff({}, {'foo': 'bar', 'apple': 'mango'}))
-        [('add', '', [('foo', 'bar'), ('apple', 'mango')])]
+    >>> from dictdiffer.utils import PathLimit
+    >>> list(diff({}, {'a': {'b': 'c'}},
+    ...           path_limit=PathLimit([('a', 'b')])))
+    [('add', '', [('a', {})]), ('add', 'a', [('b', 'c')])]
 
-        ... list(diff({}, {'foo': 'bar', 'apple': 'mango'}, expand=True))
-        [('add', '', [('foo', 'bar')]), ('add', '', [('apple', 'mango')])]
+    The patch can be expanded to small units e.g. when adding multiple values:
 
-    :param first: original dictionary, list or set
-    :param second: new dictionary, list or set
-    :param node: key for comparison that can be used in :func:`dot_lookup`
-    :param ignore: list of keys that should not be checked
+    >>> list(diff({'fruits': []}, {'fruits': ['apple', 'mango']}))
+    [('add', 'fruits', [(0, 'apple'), (1, 'mango')])]
+
+    >>> list(diff({'fruits': []}, {'fruits': ['apple', 'mango']}, expand=True))
+    [('add', 'fruits', [(0, 'apple')]), ('add', 'fruits', [(1, 'mango')])]
+
+    :param first: The original dictionary, ``list`` or ``set``.
+    :param second: New dictionary, ``list`` or ``set``.
+    :param node: Key for comparison that can be used in :func:`dot_lookup`.
+    :param ignore: List of keys that should not be checked.
     :param path_limit: List of path limit tuples or dictdiffer.utils.Pathlimit
-                       object to limit the diff recursion depth
-    :param expand: Expands the patches
-    :param tolerance: threshold to consider 2 values identical
+                       object to limit the diff recursion depth.
+    :param expand: Expand the patches.
+    :param tolerance: Threshold to consider when comparing two float numbers.
 
     .. versionchanged:: 0.3
        Added *ignore* parameter.
