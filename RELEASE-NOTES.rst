@@ -36,7 +36,7 @@ Installation
 Documentation
 -------------
 
-   http://dictdiffer.readthedocs.org/en/v0.6.0
+   http://dictdiffer.readthedocs.io/en/v0.6.0
 
 Happy hacking and thanks for flying Dictdiffer.
 

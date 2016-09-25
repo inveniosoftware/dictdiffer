@@ -35,7 +35,7 @@ Dictdiffer is on PyPI so all you need is: ::
 Documentation
 =============
 
-Documentation is readable at http://dictdiffer.readthedocs.org or can be
+Documentation is readable at http://dictdiffer.readthedocs.io or can be
 built using Sphinx: ::
 
     pip install dictdiffer[docs]

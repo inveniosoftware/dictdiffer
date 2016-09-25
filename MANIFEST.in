@@ -9,6 +9,6 @@
 include README.rst CHANGES CONTRIBUTING.rst AUTHORS LICENSE MANIFEST.in
 include RELEASE-NOTES.rst
 include .coveragerc pytest.ini
-include docs/*.rst docs/*.py docs/Makefile
+include docs/*.rst docs/*.py docs/Makefile docs/requirements.txt
 include *.py *.sh
 include tox.ini tests/*.py
