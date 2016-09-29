@@ -1,0 +1,3 @@
+approvals = 1
+pattern = "(?i)LGTM"
+self_approval_off = true

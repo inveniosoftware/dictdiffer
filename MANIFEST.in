@@ -1,6 +1,6 @@
 # This file is part of Dictdiffer.
 #
-# Copyright (C) 2014 CERN.
+# Copyright (C) 2014, 2016 CERN.
 #
 # Dictdiffer is free software; you can redistribute it and/or modify
 # it under the terms of the MIT License; see LICENSE file for more
@@ -9,6 +9,7 @@
 include README.rst CHANGES CONTRIBUTING.rst AUTHORS LICENSE MANIFEST.in
 include RELEASE-NOTES.rst
 include .coveragerc pytest.ini
+include .lgtm MAINTAINERS
 include docs/*.rst docs/*.py docs/Makefile docs/requirements.txt
 include *.py *.sh
 include tox.ini tests/*.py
