@@ -292,9 +292,9 @@ def swap(diff_result):
     In addition, swap the changed values for `change` flag.
 
         >>> from dictdiffer import swap
-        >>> swapped = swap([('add', 'a.b.c', ('a', 'b'))])
+        >>> swapped = swap([('add', 'a.b.c', [('a', 'b'), ('c', 'd')])])
         >>> next(swapped)
-        ('remove', 'a.b.c', ('a', 'b'))
+        ('remove', 'a.b.c', [('c', 'd'), ('a', 'b')])
 
         >>> swapped = swap([('change', 'a.b.c', ('a', 'b'))])
         >>> next(swapped)
@@ -302,7 +302,7 @@ def swap(diff_result):
 
     """
     def add(node, changes):
-        return REMOVE, node, changes
+        return REMOVE, node, list(reversed(changes))
 
     def remove(node, changes):
         return ADD, node, changes

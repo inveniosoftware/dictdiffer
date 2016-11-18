@@ -568,6 +568,13 @@ class SwapperTests(unittest.TestCase):
         reverted = revert(diffed, second)
         assert reverted == first
 
+    def test_list_of_different_length(self):
+        """Check that one can revert list with different length."""
+        first = [1]
+        second = [1, 2, 3]
+        result = list(diff(first, second))
+        assert first == revert(result, second)
+
 
 class DotLookupTest(unittest.TestCase):
     def test_list_lookup(self):
