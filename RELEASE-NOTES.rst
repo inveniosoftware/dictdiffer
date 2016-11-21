@@ -1,8 +1,8 @@
 ===================
- Dictdiffer v0.6.0
+ Dictdiffer v0.6.1
 ===================
 
-Dictdiffer v0.6.0 was released on June 22, 2016.
+Dictdiffer v0.6.1 was released on November 22, 2016.
 
 About
 -----
@@ -10,33 +10,28 @@ About
 Dictdiffer is a helper module that helps you to diff and patch
 dictionaries.
 
-New features
-------------
-
-- Adds support for comparing NumPy arrays.  (#68)
-- Adds support for comparing mutable mappings, sequences and sets from
-  `collections.abs` module.  (#67)
-
 Improved features
 -----------------
 
-- Updates package structure, sorts imports and runs doctests.
+- Improves API documentation for `ignore` argument in `diff` function.
+  (#79)
+- Executes doctests during PyTest invocation.
 
 Bug fixes
 ---------
 
-- Fixes order in which handled conflicts are unified so that the
-  Merger's unified_patches can be always applied.
+- Changes order of items for REMOVE section of generated patches when
+  `swap` is called so the list items are removed from the end. (#85)
 
 Installation
 ------------
 
-   $ pip install dictdiffer==0.6.0
+   $ pip install dictdiffer==0.6.1
 
 Documentation
 -------------
 
-   http://dictdiffer.readthedocs.io/en/v0.6.0
+   http://dictdiffer.readthedocs.io/en/v0.6.1
 
 Happy hacking and thanks for flying Dictdiffer.
 

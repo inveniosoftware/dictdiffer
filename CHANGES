@@ -1,6 +1,14 @@
 Changes
 =======
 
+Version 0.6.1 (released 2016-11-22)
+
+- Changes order of items for REMOVE section of generated patches when
+  `swap` is called so the list items are removed from the end. (#85)
+- Improves API documentation for `ignore` argument in `diff` function.
+  (#79)
+- Executes doctests during PyTest invocation.
+
 Version 0.6.0 (released 2016-06-22)
 
 - Adds support for comparing NumPy arrays.  (#68)
