@@ -63,6 +63,14 @@ class DictDifferTests(unittest.TestCase):
         diffed = next(diff(first, second))
         assert ('change', 'a', (10.0, 10.5)) == diffed
 
+    def test_immutable_diffs(self):
+        first = {'a': 'a'}
+        second = {'a': {'b': 'b'}}
+        result = list(diff(first, second))
+        assert result[0][2][1]['b'] == 'b'
+        second['a']['b'] = 'c'  # result MUST stay unchanged
+        assert result[0][2][1]['b'] == 'b'
+
     def test_tolerance(self):
         first = {'a': 'b'}
         second = {'a': 'c'}

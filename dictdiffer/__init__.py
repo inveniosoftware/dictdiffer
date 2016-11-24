@@ -9,8 +9,8 @@
 
 """Dictdiffer is a helper module to diff and patch dictionaries."""
 
-import copy
 import sys
+from copy import deepcopy
 
 import pkg_resources
 
@@ -44,10 +44,12 @@ def diff(first, second, node=None, ignore=None, path_limit=None, expand=False,
          tolerance=EPSILON):
     """Compare two dictionary/list/set objects, and returns a diff result.
 
-    Return iterator with differences between two dictionaries.
+    Return an iterator with differences between two objects. The diff items
+    represent addition/deletion/change and the item value is a *deep copy*
+    from the corresponding source or destination objects.
 
     >>> from dictdiffer import diff
-    >>> result = diff({'a':'b'}, {'a':'c'})
+    >>> result = diff({'a': 'b'}, {'a': 'c'})
     >>> list(result)
     [('change', 'a', ('b', 'c'))]
 
@@ -107,6 +109,9 @@ def diff(first, second, node=None, ignore=None, path_limit=None, expand=False,
        Added *path_limit* parameter.
        Added *expand* paramter.
        Added *tolerance* parameter.
+
+    .. versionchanged:: 0.7
+       Diff items are deep copies from its corresponding objects.
     """
     if path_limit is not None and not isinstance(path_limit, PathLimit):
         path_limit = PathLimit(path_limit)
@@ -148,8 +153,7 @@ def diff(first, second, node=None, ignore=None, path_limit=None, expand=False,
         differ = True
 
     elif isinstance(first, SET_TYPES) and isinstance(second, SET_TYPES):
-
-        intersection = {}
+        # Deep copy is not necessary for hashable items.
         addition = second - first
         if len(addition):
             yield ADD, dotted_node, [(0, addition)]
@@ -158,7 +162,10 @@ def diff(first, second, node=None, ignore=None, path_limit=None, expand=False,
             yield REMOVE, dotted_node, [(0, deletion)]
 
     if differ:
-        # Compare if object is a dictionary.
+        # Compare if object is a dictionary or list.
+        #
+        # NOTE variables: intersection, addition, deletion contain only
+        # hashable types, hence they do not need to be deepcopied.
         #
         # Call again the parent function as recursive if dictionary have child
         # objects.  Yields `add` and `remove` flags.
@@ -166,7 +173,9 @@ def diff(first, second, node=None, ignore=None, path_limit=None, expand=False,
             # if type is not changed, callees again diff function to compare.
             # otherwise, the change will be handled as `change` flag.
             if path_limit and path_limit.path_is_limit(node+[key]):
-                yield CHANGE, node+[key], (first[key], second[key])
+                yield CHANGE, node+[key], (
+                    deepcopy(first[key]), deepcopy(second[key])
+                )
             else:
                 recurred = diff(first[key],
                                 second[key],
@@ -186,9 +195,9 @@ def diff(first, second, node=None, ignore=None, path_limit=None, expand=False,
                 for key in addition:
                     if not isinstance(second[key],
                                       SET_TYPES + LIST_TYPES + DICT_TYPES):
-                        collect.append((key, second[key]))
+                        collect.append((key, deepcopy(second[key])))
                     elif path_limit.path_is_limit(node+[key]):
-                        collect.append((key, second[key]))
+                        collect.append((key, deepcopy(second[key])))
                     else:
                         collect.append((key, second[key].__class__()))
                         recurred = diff(second[key].__class__(),
@@ -213,32 +222,32 @@ def diff(first, second, node=None, ignore=None, path_limit=None, expand=False,
             else:
                 if expand:
                     for key in addition:
-                        yield ADD, dotted_node, [(key, second[key])]
+                        yield ADD, dotted_node, [(key, deepcopy(second[key]))]
                 else:
                     yield ADD, dotted_node, [
                         # for additions, return a list that consist with
                         # two-pair tuples.
-                        (key, second[key]) for key in addition]
+                        (key, deepcopy(second[key])) for key in addition]
 
         if deletion:
             if expand:
                 for key in deletion:
-                    yield REMOVE, dotted_node, [(key, first[key])]
+                    yield REMOVE, dotted_node, [(key, deepcopy(first[key]))]
             else:
                 yield REMOVE, dotted_node, [
                     # for deletions, return the list of removed keys
                     # and values.
-                    (key, first[key]) for key in deletion]
+                    (key, deepcopy(first[key])) for key in deletion]
 
     else:
         # Compare string and numerical types and yield `change` flag.
         if are_different(first, second, tolerance):
-            yield CHANGE, dotted_node, (first, second)
+            yield CHANGE, dotted_node, (deepcopy(first), deepcopy(second))
 
 
 def patch(diff_result, destination):
     """Patch the diff result to the old dictionary."""
-    destination = copy.deepcopy(destination)
+    destination = deepcopy(destination)
 
     def add(node, changes):
         for key, value in changes:
