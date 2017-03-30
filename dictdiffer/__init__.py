@@ -245,9 +245,19 @@ def diff(first, second, node=None, ignore=None, path_limit=None, expand=False,
             yield CHANGE, dotted_node, (deepcopy(first), deepcopy(second))
 
 
-def patch(diff_result, destination):
-    """Patch the diff result to the old dictionary."""
-    destination = deepcopy(destination)
+def patch(diff_result, destination, in_place=False):
+    """Patch the diff result to the destination dictionary.
+    
+    :param diff_result: Changes returned by ``diff``.
+    :param destination: Structure to apply the changes to.
+    :param in_place: By default, destination dictionary is deep copied
+                     before applying the patch, and the copy is returned.
+                     Setting ``in_place=True`` means that patch will apply
+                     the changes directly to and return the destination
+                     structure.
+    """
+    if not in_place:
+      destination = deepcopy(destination)
 
     def add(node, changes):
         for key, value in changes:
@@ -330,7 +340,7 @@ def swap(diff_result):
         yield swappers[action](node, change)
 
 
-def revert(diff_result, destination):
+def revert(diff_result, destination, in_place=False):
     """Call swap function to revert patched dictionary object.
 
     Usage example:
@@ -340,6 +350,13 @@ def revert(diff_result, destination):
         >>> second = {'a': 'c'}
         >>> revert(diff(first, second), second)
         {'a': 'b'}
-
+        
+    :param diff_result: Changes returned by ``diff``.
+    :param destination: Structure to apply the changes to.
+    :param in_place: By default, destination dictionary is deep
+                     copied before being reverted, and the copy
+                     is returned. Setting ``in_place=True`` means
+                     that revert will apply the changes directly to
+                     and return the destination structure.
     """
-    return patch(swap(diff_result), destination)
+    return patch(swap(diff_result), destination, in_place)

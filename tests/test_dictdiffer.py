@@ -549,6 +549,18 @@ class DiffPatcherTests(unittest.TestCase):
         first_patch = [('change', [0, '1', 2], (3, '3'))]
         assert second == patch(first_patch, first)
         assert first_patch[0] == list(diff(first, second))[0]
+        
+    def test_in_place_patch_and_revert(self):
+        first = {'a': 1}
+        second = {'a': 2}
+        changes = list(diff(first, second))
+        patched_copy = patch(changes, first)
+        assert first != patched_copy
+        reverted_in_place = revert(changes, patched_copy, in_place=True)
+        assert first == reverted_in_place
+        assert patched_copy == reverted_in_place
+        patched_in_place = patch(changes, first, in_place=True)
+        assert first == patched_in_place
 
 
 class SwapperTests(unittest.TestCase):
