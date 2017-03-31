@@ -2,6 +2,7 @@
 #
 # Copyright (C) 2013 Fatih Erikli.
 # Copyright (C) 2014, 2015, 2016 CERN.
+# Copyright (C) 2017 ETH Zurich, Swiss Data Science Center, Jiri Kuncar.
 #
 # Dictdiffer is free software; you can redistribute it and/or modify
 # it under the terms of the MIT License; see LICENSE file for more
@@ -80,12 +81,11 @@ setup(
     tests_require=tests_require,
     classifiers=[
         'Programming Language :: Python :: 2',
-        'Programming Language :: Python :: 2.6',
         'Programming Language :: Python :: 2.7',
         'Programming Language :: Python :: 3',
-        'Programming Language :: Python :: 3.3',
         'Programming Language :: Python :: 3.4',
         'Programming Language :: Python :: 3.5',
+        'Programming Language :: Python :: 3.6',
         'Development Status :: 5 - Production/Stable',
         'Intended Audience :: Developers',
         'License :: OSI Approved :: MIT License',
