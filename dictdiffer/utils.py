@@ -16,7 +16,7 @@ EPSILON = sys.float_info.epsilon
 
 
 class WildcardDict(dict):
-    """A dictionary that provides special wildcard keys.
+    """Provide possibility to use special wildcard keys to access values.
 
     Those wildcards are:
         *:  wildcard for everything that follows
@@ -34,7 +34,7 @@ class WildcardDict(dict):
     """
 
     def __init__(self, values=None):
-        """A dictionary that provides special wildcard keys.
+        """Set lookup key indices.
 
         :param values: a dictionary
         """
@@ -130,7 +130,7 @@ class PathLimit(object):
             containing[self.final_key] = True
 
     def path_is_limit(self, key_path):
-        """Querie the PathLimit object if the given key_path is a limit.
+        """Query the PathLimit object if the given key_path is a limit.
 
         >>> pl = PathLimit( [('foo', 'bar')] , final_key='!@#$%FINAL')
         >>> pl.path_is_limit( ('foo', 'bar') )

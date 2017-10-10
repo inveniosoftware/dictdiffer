@@ -247,7 +247,7 @@ def diff(first, second, node=None, ignore=None, path_limit=None, expand=False,
 
 def patch(diff_result, destination, in_place=False):
     """Patch the diff result to the destination dictionary.
-    
+
     :param diff_result: Changes returned by ``diff``.
     :param destination: Structure to apply the changes to.
     :param in_place: By default, destination dictionary is deep copied
@@ -257,7 +257,7 @@ def patch(diff_result, destination, in_place=False):
                      structure.
     """
     if not in_place:
-      destination = deepcopy(destination)
+        destination = deepcopy(destination)
 
     def add(node, changes):
         for key, value in changes:
@@ -350,7 +350,7 @@ def revert(diff_result, destination, in_place=False):
         >>> second = {'a': 'c'}
         >>> revert(diff(first, second), second)
         {'a': 'b'}
-        
+
     :param diff_result: Changes returned by ``diff``.
     :param destination: Structure to apply the changes to.
     :param in_place: By default, destination dictionary is deep

@@ -549,7 +549,7 @@ class DiffPatcherTests(unittest.TestCase):
         first_patch = [('change', [0, '1', 2], (3, '3'))]
         assert second == patch(first_patch, first)
         assert first_patch[0] == list(diff(first, second))[0]
-        
+
     def test_in_place_patch_and_revert(self):
         first = {'a': 1}
         second = {'a': 2}

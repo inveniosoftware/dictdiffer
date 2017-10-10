@@ -37,7 +37,7 @@ class Merger(object):
     def __init__(self,
                  lca, first, second, actions,
                  path_limits=[], additional_info=None):
-        """Initialization of Merger object.
+        """Initialize the Merger object.
 
         :param lca: latest common ancestor of the two diverging data structures
         :param first: first data structure

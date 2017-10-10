@@ -19,7 +19,7 @@ class UnresolvedConflictsException(Exception):
     """
 
     def __init__(self, unresolved_conflicts):
-        """Initialization of UnresolvedConflictsException.
+        """Initialize the UnresolvedConflictsException.
 
         :param unresolved_conflicts: list of unresolved conflicts.
                                      dictdiffer.conflict.Conflict objects.
@@ -31,11 +31,11 @@ class UnresolvedConflictsException(Exception):
         self.content = unresolved_conflicts
 
     def __repr__(self):
-        """String representation."""
+        """Return the object representation."""
         return self.message
 
     def __str__(self):
-        """String representation."""
+        """Return the string representation."""
         return self.message
 
 
@@ -56,7 +56,7 @@ class Resolver(object):
     """
 
     def __init__(self, actions, additional_info=None):
-        """Initialization of the Resolver.
+        """Initialize the Resolver.
 
         :param action: dict object containing the necessary resolution
                        functions
@@ -97,7 +97,7 @@ class Resolver(object):
         return (iterable[:i] for i in reversed(range(1, len(iterable)+1)))
 
     def resolve_conflicts(self, first_patches, second_patches, conflicts):
-        """Method to present the given conflicts to the actions.
+        """Convert the given conflicts to the actions.
 
         The method, will map the conflicts to an actions based on the path of
         the conflict. In case that the resolution attempt is not successful, it
@@ -134,7 +134,7 @@ class Resolver(object):
             raise UnresolvedConflictsException(self.unresolved_conflicts)
 
     def manual_resolve_conflicts(self, picks):
-        """Method to manually resolve conflicts.
+        """Resolve manually the conflicts.
 
         This method resolves conflicts that could not be resolved in an
         automatic way. The picks parameter utilized the *take* attribute of the
