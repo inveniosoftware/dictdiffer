@@ -93,7 +93,7 @@ def diff(first, second, node=None, ignore=None, path_limit=None, expand=False,
     :param first: The original dictionary, ``list`` or ``set``.
     :param second: New dictionary, ``list`` or ``set``.
     :param node: Key for comparison that can be used in :func:`dot_lookup`.
-    :param ignore: List of keys that should not be checked.
+    :param ignore: Set of keys that should not be checked.
     :param path_limit: List of path limit tuples or dictdiffer.utils.Pathlimit
                        object to limit the diff recursion depth.
     :param expand: Expand the patches.
@@ -112,15 +112,27 @@ def diff(first, second, node=None, ignore=None, path_limit=None, expand=False,
 
     .. versionchanged:: 0.7
        Diff items are deep copies from its corresponding objects.
+       Argument *ignore* is always converted to a ``set``.
     """
     if path_limit is not None and not isinstance(path_limit, PathLimit):
         path_limit = PathLimit(path_limit)
 
+    if isinstance(ignore, list):
+        ignore = {
+            tuple(value) if isinstance(value, list) else value
+            for value in ignore
+        }
+
     node = node or []
-    if all(map(lambda x: isinstance(x, string_types), node)):
-        dotted_node = '.'.join(node)
-    else:
-        dotted_node = list(node)
+
+    def dotted(node, default_type=list):
+        """Return dotted notation."""
+        if all(map(lambda x: isinstance(x, string_types), node)):
+            return '.'.join(node)
+        else:
+            return default_type(node)
+
+    dotted_node = dotted(node)
 
     differ = False
 
@@ -128,15 +140,10 @@ def diff(first, second, node=None, ignore=None, path_limit=None, expand=False,
         # dictionaries are not hashable, we can't use sets
         def check(key):
             """Test if key in current node should be ignored."""
-            if PY2 and isinstance(key, text_type):
-                new_key = key.encode('utf-8')
-            else:
-                new_key = key
-            return ignore is None \
-                or (node + [key] if isinstance(dotted_node, LIST_TYPES)
-                    else '.'.join([str(x) for x in node
-                                   if isinstance(x, str)] +
-                                  [str(new_key)])) not in ignore
+            return ignore is None or (
+                dotted(node + [key], default_type=tuple) not in ignore and
+                tuple(node + [key]) not in ignore
+            )
 
         intersection = [k for k in first if k in second and check(k)]
         addition = [k for k in second if k not in first and check(k)]
