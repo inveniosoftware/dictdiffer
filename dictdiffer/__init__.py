@@ -134,7 +134,7 @@ def diff(first, second, node=None, ignore=None, path_limit=None, expand=False,
                 new_key = key
             return ignore is None \
                 or (node + [key] if isinstance(dotted_node, LIST_TYPES)
-                    else '.'.join(node + [str(new_key)])) not in ignore
+                    else '.'.join([str(x) for x in node if isinstance(x, str)] + [str(new_key)])) not in ignore
 
         intersection = [k for k in first if k in second and check(k)]
         addition = [k for k in second if k not in first and check(k)]
