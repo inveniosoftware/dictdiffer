@@ -1,6 +1,15 @@
 Changes
 =======
 
+Version 0.7.0 (released 2017-10-16)
+
+- Fixes problem with diff results that reference the original structure by
+  introduction of `deepcopy` for all possibly unhashable items. Thus the diff
+  does not change later when the diffed structures change.
+- Adds new option for patching and reverting patches in-place.
+- Adds Python 3.6 to test matrix.
+- Fixes the `ignore` argument when it contains a unicode value.
+
 Version 0.6.1 (released 2016-11-22)
 
 - Changes order of items for REMOVE section of generated patches when

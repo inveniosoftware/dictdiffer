@@ -3,6 +3,7 @@
 # This file is part of Dictdiffer.
 #
 # Copyright (C) 2014, 2015, 2016 CERN.
+# Copyright (C) 2017 ETH Zurich, Swiss Data Science Center, Jiri Kuncar.
 #
 # Dictdiffer is free software; you can redistribute it and/or modify
 # it under the terms of the MIT License; see LICENSE file for more
@@ -17,4 +18,4 @@ This file is imported by ``dictdiffer.__init__``, and parsed by
 # Do not change the format of this next line. Doing so risks breaking
 # setup.py and docs/conf.py
 
-__version__ = "0.6.2.dev20161122"
+__version__ = "0.7.0"
