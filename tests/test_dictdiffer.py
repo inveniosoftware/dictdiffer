@@ -265,13 +265,13 @@ class DictDifferTests(unittest.TestCase):
         assert ('change', 'a.ac', ('C', 3)) == diffed
 
     def test_ignore_with_unicode_sub_keys(self):
-        first = {u'bill': {u'למה': {u'time': 1506756440000}}}
-        second = {u'bill': {u'למה': {u'time': 1506756440001}}}
+        first = {u'a': {u'aא': {u'aa': 'A'}}}
+        second = {u'a': {u'aא': {u'aa': 'B'}}}
 
         assert len(list(diff(first, second))) == 1
-        assert len(list(diff(first, second, ignore=[u'bill.למה.time']))) == 0
+        assert len(list(diff(first, second, ignore=[u'a.aא.aa']))) == 0
         assert len(
-            list(diff(first, second, ignore=[[u'bill', u'למה', u'time']
+            list(diff(first, second, ignore=[[u'a', u'aא', u'aa']
                                              ]))) == 0
 
     def test_ignore_complex_key(self):
