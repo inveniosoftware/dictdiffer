@@ -249,6 +249,9 @@ class DictDifferTests(unittest.TestCase):
         diffed = list(diff(first, second, ignore=['hello']))
         assert ('remove', '', [(u'привет', 1)]) == diffed[0]
 
+        diffed = list(diff(first, second, ignore=[u'привет']))
+        assert ('add', '', [('hello', 1)]) == diffed[0]
+
     def test_ignore_key(self):
         first = {'a': 'a', 'b': 'b', 'c': 'c'}
         second = {'a': 'a', 'b': 2, 'c': 3}
@@ -260,6 +263,16 @@ class DictDifferTests(unittest.TestCase):
         second = {'a': {'aa': 1, 'ab': 'B', 'ac': 3}}
         diffed = next(diff(first, second, ignore=['a.aa']))
         assert ('change', 'a.ac', ('C', 3)) == diffed
+
+    def test_ignore_with_unicode_sub_keys(self):
+        first = {u'a': {u'aא': {u'aa': 'A'}}}
+        second = {u'a': {u'aא': {u'aa': 'B'}}}
+
+        assert len(list(diff(first, second))) == 1
+        assert len(list(diff(first, second, ignore=[u'a.aא.aa']))) == 0
+        assert len(
+            list(diff(first, second, ignore=[[u'a', u'aא', u'aa']
+                                             ]))) == 0
 
     def test_ignore_complex_key(self):
         first = {'a': {1: {'a': 'a', 'b': 'b'}}}
