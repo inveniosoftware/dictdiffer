@@ -4,7 +4,7 @@
 #
 # Copyright (C) 2013 Fatih Erikli.
 # Copyright (C) 2013, 2014, 2015, 2016 CERN.
-# Copyright (C) 2017 ETH Zurich, Swiss Data Science Center, Jiri Kuncar.
+# Copyright (C) 2017, 2018 ETH Zurich, Swiss Data Science Center, Jiri Kuncar.
 #
 # Dictdiffer is free software; you can redistribute it and/or modify
 # it under the terms of the MIT License; see LICENSE file for more
@@ -252,6 +252,12 @@ class DictDifferTests(unittest.TestCase):
 
         diffed = list(diff(first, second, ignore=[u'привет']))
         assert ('add', '', [('hello', 1)]) == diffed[0]
+
+    def test_dotted_key(self):
+        first = {'a.b': {'c.d': 1}}
+        second = {'a.b': {'c.d': 2}}
+        diffed = list(diff(first, second))
+        assert [('change', ['a.b', 'c.d'], (1, 2))] == diffed
 
     def test_ignore_key(self):
         first = {'a': 'a', 'b': 'b', 'c': 'c'}

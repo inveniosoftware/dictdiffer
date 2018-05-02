@@ -2,7 +2,7 @@
 #
 # Copyright (C) 2013 Fatih Erikli.
 # Copyright (C) 2013, 2014, 2015, 2016 CERN.
-# Copyright (C) 2017 ETH Zurich, Swiss Data Science Center, Jiri Kuncar.
+# Copyright (C) 2017, 2018 ETH Zurich, Swiss Data Science Center, Jiri Kuncar.
 #
 # Dictdiffer is free software; you can redistribute it and/or modify
 # it under the terms of the MIT License; see LICENSE file for more
@@ -128,7 +128,8 @@ def diff(first, second, node=None, ignore=None, path_limit=None, expand=False,
 
     def dotted(node, default_type=list):
         """Return dotted notation."""
-        if all(map(lambda x: isinstance(x, string_types), node)):
+        if all(map(lambda x: isinstance(x, string_types) and '.' not in x,
+                   node)):
             return '.'.join(node)
         else:
             return default_type(node)
