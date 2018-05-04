@@ -1,6 +1,10 @@
 Changes
 =======
 
+Version 0.7.1 (released 2018-05-04)
+
+- Resolves issue with keys containing dots.  (#101)
+
 Version 0.7.0 (released 2017-10-16)
 
 - Fixes problem with diff results that reference the original structure by
