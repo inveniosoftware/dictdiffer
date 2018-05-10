@@ -8,23 +8,22 @@
 
 """Python compatibility definitions."""
 
-import sys
-
-if sys.version_info[0] == 3:  # pragma: no cover (Python 2/3 specific code)
-    string_types = str,
-    text_type = str
-    num_types = int, float
-    PY2 = False
-
-    from collections.abc import MutableMapping, MutableSet, MutableSequence
-    from itertools import zip_longest as _zip_longest
-    izip_longest = _zip_longest
-else:  # pragma: no cover (Python 2/3 specific code)
+try:
+    PY2 = True
     string_types = basestring,
     text_type = unicode
     num_types = int, long, float
-    PY2 = True
+except NameError:
+    PY2 = False
+    string_types = str,
+    text_type = str
+    num_types = int, float
 
+if PY2:
     from collections import MutableMapping, MutableSet, MutableSequence
     from itertools import izip_longest as _zip_longest
-    izip_longest = _zip_longest
+else:
+    from collections.abc import MutableMapping, MutableSet, MutableSequence
+    from itertools import zip_longest as _zip_longest
+
+izip_longest = _zip_longest
