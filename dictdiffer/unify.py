@@ -37,7 +37,8 @@ class Unifier(object):
                 if conflict.take_patch() != patch:
                     continue
 
-            self.unified_patches.append(patch)
+            if patch not in self.unified_patches:
+                self.unified_patches.append(patch)
 
         return self.unified_patches
 

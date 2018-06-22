@@ -40,3 +40,15 @@ class TestUnifier(unittest.TestCase):
         u.unify([p1], [p2], [c])
 
         self.assertEqual(u.unified_patches, [p1])
+
+    def test_unify_duplicate_patches(self):
+        u = Unifier()
+
+        p1 = ('remove', '', [('a', 'b')])
+        p2 = ('remove', '', [('a', 'b')])
+        c = Conflict(p1, p2)
+        c.take = 'f'
+
+        u.unify([p1], [p2], [c])
+
+        self.assertEqual(u.unified_patches, [p1])
