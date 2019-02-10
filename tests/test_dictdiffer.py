@@ -208,8 +208,8 @@ class DictDifferTests(unittest.TestCase):
         assert ('remove', 'a', [(1, 'c'), (0, 'b'), ]) == diffed
 
     def test_add_set(self):
-        first = {'a': set([1, 2, 3])}
-        second = {'a': set([0, 1, 2, 3])}
+        first = {'a': {1, 2, 3}}
+        second = {'a': {0, 1, 2, 3}}
         diffed = next(diff(first, second))
         assert ('add', 'a', [(0, set([0]))]) == diffed
 
@@ -300,6 +300,26 @@ class DictDifferTests(unittest.TestCase):
         assert ('change', ['a', 1, 'a'], ('a', 1)) == diffed
         diffed = next(diff(second, first, ignore=[['a', 1, 'b']]))
         assert ('change', ['a', 1, 'a'], (1, 'a')) == diffed
+
+    def test_ignore_stringofintegers_keys(self):
+        a = {'1': '1', '2': '2', '3': '3'}
+        b = {'1': '1', '2': '2', '3': '99', '4': '100'}
+
+        assert list(diff(a, b, ignore={'3', '4'})) == []
+
+    def test_ignore_integers_keys(self):
+        a = {1: 1, 2: 2, 3: 3}
+        b = {1: 1, 2: 2, 3: 99, 4: 100}
+
+        assert len(list(diff(a, b, ignore={3, 4}))) == 0
+
+    def test_ignore_with_ignorecase(self):
+        class IgnoreCase(set):
+            def __contains__(self, key):
+                return set.__contains__(self, str(key).lower())
+
+        assert list(diff({'a': 1, 'b': 2}, {'A': 3, 'b': 4},
+                         ignore=IgnoreCase('a'))) == [('change', 'b', (2, 4))]
 
     def test_complex_diff(self):
         """Check regression on issue #4."""
