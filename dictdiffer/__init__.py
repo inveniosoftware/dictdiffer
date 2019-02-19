@@ -14,8 +14,8 @@ from copy import deepcopy
 
 import pkg_resources
 
-from ._compat import (PY2, MutableMapping, MutableSequence, MutableSet,
-                      Iterable, string_types, text_type)
+from ._compat import (PY2, Iterable, MutableMapping, MutableSequence,
+                      MutableSet, string_types, text_type)
 from .utils import EPSILON, PathLimit, are_different, dot_lookup
 from .version import __version__
 
