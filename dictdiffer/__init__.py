@@ -159,8 +159,7 @@ def diff(first, second, node=None, ignore=None, path_limit=None, expand=False,
             def check(key):
                 """Test if key in current node should be ignored."""
                 return ignore is None or (
-                    dotted(_node + [key],
-                           default_type=tuple) not in ignore and
+                    dotted(_node + [key], default_type=tuple) not in ignore and
                     tuple(_node + [key]) not in ignore
                 )
 

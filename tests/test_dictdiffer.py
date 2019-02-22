@@ -10,6 +10,7 @@
 # it under the terms of the MIT License; see LICENSE file for more
 # details.
 
+from collections import OrderedDict
 import unittest
 
 from dictdiffer import HAS_NUMPY, diff, dot_lookup, patch, revert, swap
@@ -289,6 +290,17 @@ class DictDifferTests(unittest.TestCase):
         second = {'a': {'aa': 1, 'ab': 'B', 'ac': 3}}
         diffed = next(diff(first, second, ignore=['a.aa']))
         assert ('change', 'a.ac', ('C', 3)) == diffed
+
+        config_dict = OrderedDict(
+            [('address', 'devops011-slv-01.gvs.ggn'),
+             ('nifi.zookeeper.session.timeout', '3 secs')])
+
+        ref_dict = OrderedDict(
+            [('address', 'devops011-slv-01.gvs.ggn'),
+             ('nifi.zookeeper.session.timeout', '4 secs')])
+
+        assert [] == list(diff(config_dict, ref_dict,
+                               ignore={'nifi.zookeeper.session.timeout'}))
 
     def test_ignore_with_unicode_sub_keys(self):
         first = {u'a': {u'aא': {u'aa': 'A'}}}
