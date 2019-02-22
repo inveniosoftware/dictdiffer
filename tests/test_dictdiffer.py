@@ -4,7 +4,7 @@
 #
 # Copyright (C) 2013 Fatih Erikli.
 # Copyright (C) 2013, 2014, 2015, 2016 CERN.
-# Copyright (C) 2017, 2018 ETH Zurich, Swiss Data Science Center, Jiri Kuncar.
+# Copyright (C) 2017-2019 ETH Zurich, Swiss Data Science Center, Jiri Kuncar.
 #
 # Dictdiffer is free software; you can redistribute it and/or modify
 # it under the terms of the MIT License; see LICENSE file for more
@@ -239,6 +239,15 @@ class DictDifferTests(unittest.TestCase):
 
         diffed = list(diff([value], [3.5]))
         assert [('change', [0], (value, 3.5))] == diffed
+
+    @unittest.skipIf(not HAS_NUMPY, 'NumPy is not installed')
+    def test_numpy_nan(self):
+        """Compare NumPy NaNs (#114)."""
+        import numpy as np
+        first = {'a': np.float32('nan')}
+        second = {'a': float('nan')}
+        result = list(diff(first, second))
+        assert result == []
 
     def test_unicode_keys(self):
         first = {u'привет': 1}
