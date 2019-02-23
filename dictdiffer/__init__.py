@@ -16,7 +16,8 @@ import pkg_resources
 
 from ._compat import (PY2, Iterable, MutableMapping, MutableSequence,
                       MutableSet, string_types, text_type)
-from .utils import EPSILON, PathLimit, are_different, dot_lookup
+from .utils import (EPSILON, PathLimit, are_different, dot_lookup,
+                    DottedIgnoreKey)
 from .version import __version__
 
 (ADD, REMOVE, CHANGE) = (
@@ -134,6 +135,8 @@ def diff(first, second, node=None, ignore=None, path_limit=None, expand=False,
                 return value,
             elif isinstance(value, list):
                 return tuple(value)
+            elif isinstance(value, DottedIgnoreKey):
+                return str(value),
             return value
 
         ignore = type(ignore)(_process_ignore_value(value) for value in ignore)
