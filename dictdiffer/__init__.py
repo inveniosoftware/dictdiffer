@@ -130,7 +130,8 @@ def diff(first, second, node=None, ignore=None, path_limit=None, expand=False,
     def dotted(node, default_type=list):
         """Return dotted notation."""
         if dot_notation and \
-        all(map(lambda x: isinstance(x, string_types) and '.' not in x, node)):
+            all(map(lambda x: isinstance(x, string_types) and '.' not in x,
+                node)):
             return '.'.join(node)
         else:
             return default_type(node)
