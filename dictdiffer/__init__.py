@@ -41,7 +41,7 @@ else:
 
 
 def diff(first, second, node=None, ignore=None, path_limit=None, expand=False,
-         tolerance=EPSILON):
+         tolerance=EPSILON, dot_notation=True):
     """Compare two dictionary/list/set objects, and returns a diff result.
 
     Return an iterator with differences between two objects. The diff items
@@ -129,7 +129,7 @@ def diff(first, second, node=None, ignore=None, path_limit=None, expand=False,
 
     def dotted(node, default_type=list):
         """Return dotted notation."""
-        if all(map(lambda x: isinstance(x, string_types) and '.' not in x,
+        if dot_notation and all(map(lambda x: isinstance(x, string_types) and '.' not in x,
                    node)):
             return '.'.join(node)
         else:
