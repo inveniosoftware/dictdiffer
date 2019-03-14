@@ -90,6 +90,18 @@ def diff(first, second, node=None, ignore=None, path_limit=None, expand=False,
     >>> list(diff({'fruits': []}, {'fruits': ['apple', 'mango']}, expand=True))
     [('add', 'fruits', [(0, 'apple')]), ('add', 'fruits', [(1, 'mango')])]
 
+    >>> list(diff({'fruits': []}, {'fruits': ['apple', 'mango']}, expand=True))
+    [('add', 'fruits', [(0, 'apple')]), ('add', 'fruits', [(1, 'mango')])]
+
+    >>> list(diff({'a': {'x': 1, 'y': [{'z': 3}]}},
+    ... {'a': {'x': 2, 'y': [{'z': 4}]}}))
+    [('change', 'a.x', (1, 2)), ('change', ['a', 'y', 0, 'z'], (3, 4))]
+
+    >>> list(diff({'a': {'x': 1, 'y': [{'z': 3}]}},
+    ... {'a': {'x': 2, 'y': [{'z': 4}]}},
+    ... dot_notation=False))
+    [('change', ['a', 'x'], (1, 2)), ('change', ['a', 'y', 0, 'z'], (3, 4))]
+
     :param first: The original dictionary, ``list`` or ``set``.
     :param second: New dictionary, ``list`` or ``set``.
     :param node: Key for comparison that can be used in :func:`dot_lookup`.
