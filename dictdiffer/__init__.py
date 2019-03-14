@@ -41,7 +41,7 @@ else:
 
 
 def diff(first, second, node=None, ignore=None, path_limit=None, expand=False,
-         tolerance=EPSILON):
+         tolerance=EPSILON, dot_notation=True):
     """Compare two dictionary/list/set objects, and returns a diff result.
 
     Return an iterator with differences between two objects. The diff items
@@ -90,6 +90,13 @@ def diff(first, second, node=None, ignore=None, path_limit=None, expand=False,
     >>> list(diff({'fruits': []}, {'fruits': ['apple', 'mango']}, expand=True))
     [('add', 'fruits', [(0, 'apple')]), ('add', 'fruits', [(1, 'mango')])]
 
+    >>> list(diff({'a': {'x': 1}}, {'a': {'x': 2}}))
+    [('change', 'a.x', (1, 2))]
+
+    >>> list(diff({'a': {'x': 1}}, {'a': {'x': 2}},
+    ... dot_notation=False))
+    [('change', ['a', 'x'], (1, 2))]
+
     :param first: The original dictionary, ``list`` or ``set``.
     :param second: New dictionary, ``list`` or ``set``.
     :param node: Key for comparison that can be used in :func:`dot_lookup`.
@@ -98,6 +105,7 @@ def diff(first, second, node=None, ignore=None, path_limit=None, expand=False,
                        object to limit the diff recursion depth.
     :param expand: Expand the patches.
     :param tolerance: Threshold to consider when comparing two float numbers.
+    :param dot_notation: Boolean to toggle dot notation on and off.
 
     .. versionchanged:: 0.3
        Added *ignore* parameter.
@@ -113,6 +121,9 @@ def diff(first, second, node=None, ignore=None, path_limit=None, expand=False,
     .. versionchanged:: 0.7
        Diff items are deep copies from its corresponding objects.
        Argument *ignore* is always converted to a ``set``.
+
+    .. versionchanged:: 0.8
+        Added *dot_notation* parameter.
     """
     if path_limit is not None and not isinstance(path_limit, PathLimit):
         path_limit = PathLimit(path_limit)
@@ -129,8 +140,9 @@ def diff(first, second, node=None, ignore=None, path_limit=None, expand=False,
 
     def dotted(node, default_type=list):
         """Return dotted notation."""
-        if all(map(lambda x: isinstance(x, string_types) and '.' not in x,
-                   node)):
+        if dot_notation and \
+            all(map(lambda x: isinstance(x, string_types) and '.' not in x,
+                node)):
             return '.'.join(node)
         else:
             return default_type(node)
