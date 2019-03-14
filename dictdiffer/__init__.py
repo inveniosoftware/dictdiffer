@@ -110,6 +110,7 @@ def diff(first, second, node=None, ignore=None, path_limit=None, expand=False,
                        object to limit the diff recursion depth.
     :param expand: Expand the patches.
     :param tolerance: Threshold to consider when comparing two float numbers.
+    :param dot_notation: Boolean to toggle dot notation on and off.
 
     .. versionchanged:: 0.3
        Added *ignore* parameter.
@@ -125,6 +126,8 @@ def diff(first, second, node=None, ignore=None, path_limit=None, expand=False,
     .. versionchanged:: 0.7
        Diff items are deep copies from its corresponding objects.
        Argument *ignore* is always converted to a ``set``.
+    .. versionchanged:: 0.8
+        Added *dot_notation* parameter.
     """
     if path_limit is not None and not isinstance(path_limit, PathLimit):
         path_limit = PathLimit(path_limit)
