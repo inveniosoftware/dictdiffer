@@ -19,19 +19,17 @@ from dictdiffer.utils import PathLimit
 
 class DictDifferTests(unittest.TestCase):
     def test_without_dot_notation(self):
-        change1, change2 = diff({'a': {'x': 1, 'y': [{'z': 3}]}},
-                                {'a': {'x': 2, 'y': [{'z': 4}]}},
-                                dot_notation=False)
+        (change1,) = diff({'a': {'x': 1}},
+                          {'a': {'x': 2}},
+                          dot_notation=False)
 
         assert change1 == ('change', ['a', 'x'], (1, 2))
-        assert change2 == ('change', ['a', 'y', 0, 'z'], (3, 4))
 
     def test_with_dot_notation(self):
-        change1, change2 = diff({'a': {'x': 1, 'y': [{'z': 3}]}},
-                                {'a': {'x': 2, 'y': [{'z': 4}]}})
+        (change1,) = diff({'a': {'x': 1}},
+                          {'a': {'x': 2}})
 
         assert change1 == ('change', 'a.x', (1, 2))
-        assert change2 == ('change', ['a', 'y', 0, 'z'], (3, 4))
 
     def test_addition(self):
         first = {}
