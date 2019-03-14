@@ -121,6 +121,7 @@ def diff(first, second, node=None, ignore=None, path_limit=None, expand=False,
     .. versionchanged:: 0.7
        Diff items are deep copies from its corresponding objects.
        Argument *ignore* is always converted to a ``set``.
+
     .. versionchanged:: 0.8
         Added *dot_notation* parameter.
     """
