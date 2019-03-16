@@ -22,8 +22,6 @@ class DottedIgnoreKey(str):
     This custom type help to desactivate dotted interpretation.
     """
 
-    pass
-
 
 class WildcardDict(dict):
     """Provide possibility to use special wildcard keys to access values.

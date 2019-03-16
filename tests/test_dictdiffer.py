@@ -303,6 +303,12 @@ class DictDifferTests(unittest.TestCase):
 
         assert len(
             list(diff(config_dict, ref_dict,
+                      dot_notation=True,
+                      ignore=[DottedIgnoreKey(key_to_ignore)]))) == 0
+
+        assert len(
+            list(diff(config_dict, ref_dict,
+                      dot_notation=False,
                       ignore=[DottedIgnoreKey(key_to_ignore)]))) == 0
 
     def test_ignore_with_unicode_sub_keys(self):

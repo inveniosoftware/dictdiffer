@@ -16,8 +16,8 @@ import pkg_resources
 
 from ._compat import (PY2, Iterable, MutableMapping, MutableSequence,
                       MutableSet, string_types, text_type)
-from .utils import (EPSILON, PathLimit, are_different, dot_lookup,
-                    DottedIgnoreKey)
+from .utils import (EPSILON, DottedIgnoreKey, PathLimit, are_different,
+                    dot_lookup)
 from .version import __version__
 
 (ADD, REMOVE, CHANGE) = (
