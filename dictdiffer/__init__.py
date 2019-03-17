@@ -2,7 +2,7 @@
 #
 # Copyright (C) 2013 Fatih Erikli.
 # Copyright (C) 2013, 2014, 2015, 2016 CERN.
-# Copyright (C) 2017, 2018 ETH Zurich, Swiss Data Science Center, Jiri Kuncar.
+# Copyright (C) 2017-2019 ETH Zurich, Swiss Data Science Center, Jiri Kuncar.
 #
 # Dictdiffer is free software; you can redistribute it and/or modify
 # it under the terms of the MIT License; see LICENSE file for more
@@ -16,8 +16,7 @@ import pkg_resources
 
 from ._compat import (PY2, Iterable, MutableMapping, MutableSequence,
                       MutableSet, string_types, text_type)
-from .utils import (EPSILON, DottedIgnoreKey, PathLimit, are_different,
-                    dot_lookup)
+from .utils import EPSILON, PathLimit, are_different, dot_lookup
 from .version import __version__
 
 (ADD, REMOVE, CHANGE) = (
@@ -135,8 +134,8 @@ def diff(first, second, node=None, ignore=None, path_limit=None, expand=False,
                 return value,
             elif isinstance(value, list):
                 return tuple(value)
-            elif isinstance(value, DottedIgnoreKey):
-                return str(value),
+            elif not dot_notation and isinstance(value, str):
+                return value,
             return value
 
         ignore = type(ignore)(_process_ignore_value(value) for value in ignore)

@@ -13,9 +13,11 @@
 import unittest
 from collections import OrderedDict
 
+import pytest
+
 from dictdiffer import HAS_NUMPY, diff, dot_lookup, patch, revert, swap
 from dictdiffer._compat import MutableMapping, MutableSequence, MutableSet
-from dictdiffer.utils import DottedIgnoreKey, PathLimit
+from dictdiffer.utils import PathLimit
 
 
 class DictDifferTests(unittest.TestCase):
@@ -290,26 +292,6 @@ class DictDifferTests(unittest.TestCase):
         second = {'a': {'aa': 1, 'ab': 'B', 'ac': 3}}
         diffed = next(diff(first, second, ignore=['a.aa']))
         assert ('change', 'a.ac', ('C', 3)) == diffed
-
-    def test_ignore_dotted_ignore_key(self):
-        key_to_ignore = u'nifi.zookeeper.session.timeout'
-        config_dict = OrderedDict(
-            [('address', 'devops011-slv-01.gvs.ggn'),
-             (key_to_ignore, '3 secs')])
-
-        ref_dict = OrderedDict(
-            [('address', 'devops011-slv-01.gvs.ggn'),
-             (key_to_ignore, '4 secs')])
-
-        assert len(
-            list(diff(config_dict, ref_dict,
-                      dot_notation=True,
-                      ignore=[DottedIgnoreKey(key_to_ignore)]))) == 0
-
-        assert len(
-            list(diff(config_dict, ref_dict,
-                      dot_notation=False,
-                      ignore=[DottedIgnoreKey(key_to_ignore)]))) == 0
 
     def test_ignore_with_unicode_sub_keys(self):
         first = {u'a': {u'aא': {u'aa': 'A'}}}
@@ -683,6 +665,30 @@ class DotLookupTest(unittest.TestCase):
 
     def test_invalit_lookup_type(self):
         self.assertRaises(TypeError, dot_lookup, {0: '0'}, 0)
+
+
+@pytest.mark.parametrize(
+    'ignore,dot_notation,diff_size', [
+        (u'nifi.zookeeper.session.timeout', True, 1),
+        (u'nifi.zookeeper.session.timeout', False, 0),
+        ((u'nifi.zookeeper.session.timeout', ), True, 0),
+        ((u'nifi.zookeeper.session.timeout', ), False, 0),
+    ],
+)
+def test_ignore_dotted_ignore_key(ignore, dot_notation, diff_size):
+    key_to_ignore = u'nifi.zookeeper.session.timeout'
+    config_dict = OrderedDict(
+        [('address', 'devops011-slv-01.gvs.ggn'),
+            (key_to_ignore, '3 secs')])
+
+    ref_dict = OrderedDict(
+        [('address', 'devops011-slv-01.gvs.ggn'),
+            (key_to_ignore, '4 secs')])
+
+    assert diff_size == len(
+        list(diff(config_dict, ref_dict,
+                  dot_notation=dot_notation,
+                  ignore=[ignore])))
 
 
 if __name__ == "__main__":

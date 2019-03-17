@@ -16,13 +16,6 @@ from ._compat import izip_longest, num_types, string_types
 EPSILON = sys.float_info.epsilon
 
 
-class DottedIgnoreKey(str):
-    """Custom type to specify dotted ignore key.
-
-    This custom type help to desactivate dotted interpretation.
-    """
-
-
 class WildcardDict(dict):
     """Provide possibility to use special wildcard keys to access values.
 
