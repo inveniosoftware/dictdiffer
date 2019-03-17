@@ -134,7 +134,7 @@ def diff(first, second, node=None, ignore=None, path_limit=None, expand=False,
                 return value,
             elif isinstance(value, list):
                 return tuple(value)
-            elif not dot_notation and isinstance(value, str):
+            elif not dot_notation and isinstance(value, string_types):
                 return value,
             return value
 
