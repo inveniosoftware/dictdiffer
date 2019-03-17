@@ -1,6 +1,11 @@
 Changes
 =======
 
+Version 0.8.0 (released 2019-03-17)
+
+- Respect `dot_notation` flag in ignore argument (@yoyonel) (#107)
+- Adds argument for toggling dot notation in diff. (@robinchew)
+
 Version 0.7.2 (released 2019-02-22)
 
 - Two NaN values are considered the same, hence they are not shown in `diff`
