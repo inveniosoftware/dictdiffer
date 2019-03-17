@@ -2,7 +2,7 @@
 #
 # Copyright (C) 2013 Fatih Erikli.
 # Copyright (C) 2013, 2014, 2015, 2016 CERN.
-# Copyright (C) 2017, 2018 ETH Zurich, Swiss Data Science Center, Jiri Kuncar.
+# Copyright (C) 2017-2019 ETH Zurich, Swiss Data Science Center, Jiri Kuncar.
 #
 # Dictdiffer is free software; you can redistribute it and/or modify
 # it under the terms of the MIT License; see LICENSE file for more
@@ -134,6 +134,8 @@ def diff(first, second, node=None, ignore=None, path_limit=None, expand=False,
                 return value,
             elif isinstance(value, list):
                 return tuple(value)
+            elif not dot_notation and isinstance(value, string_types):
+                return value,
             return value
 
         ignore = type(ignore)(_process_ignore_value(value) for value in ignore)
@@ -159,8 +161,7 @@ def diff(first, second, node=None, ignore=None, path_limit=None, expand=False,
             def check(key):
                 """Test if key in current node should be ignored."""
                 return ignore is None or (
-                    dotted(_node + [key],
-                           default_type=tuple) not in ignore and
+                    dotted(_node + [key], default_type=tuple) not in ignore and
                     tuple(_node + [key]) not in ignore
                 )
 
