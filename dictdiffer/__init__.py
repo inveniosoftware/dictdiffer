@@ -192,6 +192,8 @@ def diff(first, second, node=None, ignore=None, path_limit=None, expand=False,
             if len(deletion):
                 yield REMOVE, dotted_node, [(0, deletion)]
 
+            return  # stop here for sets
+
         if differ:
             # Compare if object is a dictionary or list.
             #
@@ -392,3 +394,4 @@ def revert(diff_result, destination, in_place=False):
                      and return the destination structure.
     """
     return patch(swap(diff_result), destination, in_place)
+  
