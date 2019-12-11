@@ -394,4 +394,3 @@ def revert(diff_result, destination, in_place=False):
                      and return the destination structure.
     """
     return patch(swap(diff_result), destination, in_place)
-  
