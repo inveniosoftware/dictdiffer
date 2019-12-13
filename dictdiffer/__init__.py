@@ -192,6 +192,8 @@ def diff(first, second, node=None, ignore=None, path_limit=None, expand=False,
             if len(deletion):
                 yield REMOVE, dotted_node, [(0, deletion)]
 
+            return  # stop here for sets
+
         if differ:
             # Compare if object is a dictionary or list.
             #

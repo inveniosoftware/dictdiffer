@@ -239,6 +239,21 @@ class DictDifferTests(unittest.TestCase):
         assert ('add', 'a', [(0, set([4]))]) in diffed
         assert ('remove', 'a', [(0, set([0]))]) in diffed
 
+    def test_add_set_shift_order(self):
+        first = set(["changeA", "changeB"])
+        second = set(["changeA", "changeC", "changeB"])
+        diffed = list(diff(first, second))
+        # There should only be 1 change reported
+        assert len(diffed) == 1
+        assert ('add', '', [(0, {'changeC'})]) in diffed
+
+    def test_change_set_order(self):
+        first = set(["changeA", "changeC", "changeB"])
+        second = set(["changeB", "changeC", "changeA"])
+        diffed = list(diff(first, second))
+        # There should be zero reported diffs
+        assert len(diffed) == 0
+
     def test_types(self):
         first = {'a': ['a']}
         second = {'a': 'a'}
