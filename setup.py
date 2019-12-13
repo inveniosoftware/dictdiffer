@@ -79,7 +79,7 @@ setup(
     project_urls={
         'Changelog': (
             'https://github.com/inveniosoftware/dictdiffer'
-            'blob/master/CHANGES'
+            '/blob/master/CHANGES'
         ),
         'Docs': 'https://dictdiffer.rtfd.io/',
     },
