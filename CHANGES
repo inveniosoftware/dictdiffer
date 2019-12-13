@@ -1,6 +1,10 @@
 Changes
 =======
 
+Version 0.8.1 (released 2019-12-13)
+
+- Fix invalid diff output for sets. (@jirikuncar @danielduhh)  (#133 #134)
+
 Version 0.8.0 (released 2019-03-17)
 
 - Respect `dot_notation` flag in ignore argument (@yoyonel) (#107)
