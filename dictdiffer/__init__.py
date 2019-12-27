@@ -64,7 +64,7 @@ def diff(first, second, node=None, ignore=None, path_limit=None, expand=False,
     >>> list(diff({'a': 1, 'b': 2}, {'A': 3, 'b': 4}, ignore=IgnoreCase('a')))
     [('change', 'b', (2, 4))]
 
-    The difference calculation can be limitted to certain path:
+    The difference calculation can be limited to certain path:
 
     >>> list(diff({}, {'a': {'b': 'c'}}))
     [('add', '', [('a', {'b': 'c'})])]
@@ -98,6 +98,22 @@ def diff(first, second, node=None, ignore=None, path_limit=None, expand=False,
                        object to limit the diff recursion depth.
     :param expand: Expand the patches.
     :param tolerance: Threshold to consider when comparing two float numbers.
+
+    In general:
+    
+    - `diff` is a generator that yields zero or more tuples of the format
+    `(op, path, values)`, where
+    - `op` is one of the strings 'add', 'change' or 'remove'
+    - `path` is by default a dot-separated string of keys from the root of the 
+    structure to the point of difference.
+        - If parameter `dot_notation` is set to False, path is a list of
+        separate key strings instead.
+    - `values` are one or more tuples containing:
+        - Key/value pairs for 'add' and 'remove'; keys for lists are indexes
+        - Previous/new values for 'change', key being a part of the path in this case
+        - Several value tuples sharing the same op and path are wrapped in a 
+        list, unless you specify `expand=True`, in which case they all 
+        get a separate (op, path, values) tuple.
 
     .. versionchanged:: 0.3
        Added *ignore* parameter.
@@ -255,6 +271,10 @@ def patch(diff_result, destination, in_place=False):
                      Setting ``in_place=True`` means that patch will apply
                      the changes directly to and return the destination
                      structure.
+                     Note that patching is not atomic - 
+                     an exception in patching while ``in_place=True`` 
+                     can leave the structure in a state where only a part of 
+                     the patch was applied.
     """
     if not in_place:
         destination = deepcopy(destination)
