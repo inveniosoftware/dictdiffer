@@ -20,6 +20,12 @@ python:
   - "3.5"
   - "3.6"
 
+matrix:
+  include:
+    - python: "3.7"
+      os: linux
+      dist: xenial
+
 before_install:
   - "travis_retry pip install --upgrade pip setuptools py"
   - "travis_retry pip install twine wheel coveralls requirements-builder"

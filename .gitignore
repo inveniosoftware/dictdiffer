@@ -16,6 +16,7 @@
 .coverage
 .tox
 build/
+dictdiffer/version.py
 dist/
 docs/_build
 docs/db

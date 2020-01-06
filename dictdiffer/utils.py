@@ -1,6 +1,7 @@
 # This file is part of Dictdiffer.
 #
 # Copyright (C) 2015 CERN.
+# Copyright (C) 2017, 2019 ETH Zurich, Swiss Data Science Center, Jiri Kuncar.
 #
 # Dictdiffer is free software; you can redistribute it and/or modify
 # it under the terms of the MIT License; see LICENSE file for more
@@ -261,12 +262,14 @@ def are_different(first, second, tolerance):
     if first == second:
         # values are same - simple case
         return False
-    elif bool(first != first) ^ bool(second != second):
-        # only one of them is 'NaN', hence they are different
-        return True
+
+    first_is_nan, second_is_nan = bool(first != first), bool(second != second)
+
+    if first_is_nan or second_is_nan:
+        # two 'NaN' values are not different (see issue #114)
+        return not (first_is_nan and second_is_nan)
     elif isinstance(first, num_types) and isinstance(second, num_types):
-        # (a) two numerical values are compared with tolerance
-        # (b) both values are NaN and they will never fit the tolerance
+        # two numerical values are compared with tolerance
         return abs(first-second) > tolerance * max(abs(first), abs(second))
     # we got different values
     return True

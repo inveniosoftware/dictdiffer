@@ -1,6 +1,38 @@
 Changes
 =======
 
+Version 0.8.1 (released 2019-12-13)
+
+- Fix invalid diff output for sets. (@jirikuncar @danielduhh)  (#133 #134)
+
+Version 0.8.0 (released 2019-03-17)
+
+- Respect `dot_notation` flag in ignore argument (@yoyonel) (#107)
+- Adds argument for toggling dot notation in diff. (@robinchew)
+
+Version 0.7.2 (released 2019-02-22)
+
+- Two NaN values are considered the same, hence they are not shown in `diff`
+  output.  (#114) (@t-b)
+- Refactors `diff` method to reduce recursive call stack size.  (#112)
+  (@yoyonel)
+- Python porting best practice use feature detection instead
+  of version detection to save an import and pass both PyLint
+  and Flake8 tests with neither 'pragma' nor 'noqa'.  (@cclauss)
+
+Version 0.7.1 (released 2018-05-04)
+
+- Resolves issue with keys containing dots.  (#101)
+
+Version 0.7.0 (released 2017-10-16)
+
+- Fixes problem with diff results that reference the original structure by
+  introduction of `deepcopy` for all possibly unhashable items. Thus the diff
+  does not change later when the diffed structures change.
+- Adds new option for patching and reverting patches in-place.
+- Adds Python 3.6 to test matrix.
+- Fixes the `ignore` argument when it contains a unicode value.
+
 Version 0.6.1 (released 2016-11-22)
 
 - Changes order of items for REMOVE section of generated patches when

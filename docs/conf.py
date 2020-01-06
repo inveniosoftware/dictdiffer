@@ -24,9 +24,9 @@
 
 from __future__ import print_function
 
-import os
-import re
 import sys
+
+from pkg_resources import get_distribution
 
 _html_theme = "sphinx_rtd_theme"
 _html_theme_path = []
@@ -81,13 +81,7 @@ copyright = u'2014, Fatih Erikli'
 # built documents.
 #
 # The short X.Y version.
-
-with open(os.path.join(os.path.dirname(__file__), '..', 'dictdiffer',
-                       'version.py'), 'rt') as f:
-    version = re.search(
-        '__version__\s*=\s*"(?P<version>.*)"\n',
-        f.read()
-    ).group('version')
+version = get_distribution('dictdiffer').version
 
 # The full version, including alpha/beta/rc tags.
 release = version

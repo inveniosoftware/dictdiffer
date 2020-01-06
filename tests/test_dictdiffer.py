@@ -4,22 +4,36 @@
 #
 # Copyright (C) 2013 Fatih Erikli.
 # Copyright (C) 2013, 2014, 2015, 2016 CERN.
+# Copyright (C) 2017-2019 ETH Zurich, Swiss Data Science Center, Jiri Kuncar.
 #
 # Dictdiffer is free software; you can redistribute it and/or modify
 # it under the terms of the MIT License; see LICENSE file for more
 # details.
 
 import unittest
+from collections import OrderedDict
+
+import pytest
 
 from dictdiffer import HAS_NUMPY, diff, dot_lookup, patch, revert, swap
 from dictdiffer._compat import MutableMapping, MutableSequence, MutableSet
 from dictdiffer.utils import PathLimit
 
-if not hasattr(unittest, 'skipIf'):
-    import unittest2 as unittest  # Python 2.6 support
-
 
 class DictDifferTests(unittest.TestCase):
+    def test_without_dot_notation(self):
+        (change1,) = diff({'a': {'x': 1}},
+                          {'a': {'x': 2}},
+                          dot_notation=False)
+
+        assert change1 == ('change', ['a', 'x'], (1, 2))
+
+    def test_with_dot_notation(self):
+        (change1,) = diff({'a': {'x': 1}},
+                          {'a': {'x': 2}})
+
+        assert change1 == ('change', 'a.x', (1, 2))
+
     def test_addition(self):
         first = {}
         second = {'a': 'b'}
@@ -207,8 +221,8 @@ class DictDifferTests(unittest.TestCase):
         assert ('remove', 'a', [(1, 'c'), (0, 'b'), ]) == diffed
 
     def test_add_set(self):
-        first = {'a': set([1, 2, 3])}
-        second = {'a': set([0, 1, 2, 3])}
+        first = {'a': {1, 2, 3}}
+        second = {'a': {0, 1, 2, 3}}
         diffed = next(diff(first, second))
         assert ('add', 'a', [(0, set([0]))]) == diffed
 
@@ -225,6 +239,21 @@ class DictDifferTests(unittest.TestCase):
         assert ('add', 'a', [(0, set([4]))]) in diffed
         assert ('remove', 'a', [(0, set([0]))]) in diffed
 
+    def test_add_set_shift_order(self):
+        first = set(["changeA", "changeB"])
+        second = set(["changeA", "changeC", "changeB"])
+        diffed = list(diff(first, second))
+        # There should only be 1 change reported
+        assert len(diffed) == 1
+        assert ('add', '', [(0, {'changeC'})]) in diffed
+
+    def test_change_set_order(self):
+        first = set(["changeA", "changeC", "changeB"])
+        second = set(["changeB", "changeC", "changeA"])
+        diffed = list(diff(first, second))
+        # There should be zero reported diffs
+        assert len(diffed) == 0
+
     def test_types(self):
         first = {'a': ['a']}
         second = {'a': 'a'}
@@ -239,6 +268,15 @@ class DictDifferTests(unittest.TestCase):
         diffed = list(diff([value], [3.5]))
         assert [('change', [0], (value, 3.5))] == diffed
 
+    @unittest.skipIf(not HAS_NUMPY, 'NumPy is not installed')
+    def test_numpy_nan(self):
+        """Compare NumPy NaNs (#114)."""
+        import numpy as np
+        first = {'a': np.float32('nan')}
+        second = {'a': float('nan')}
+        result = list(diff(first, second))
+        assert result == []
+
     def test_unicode_keys(self):
         first = {u'привет': 1}
         second = {'hello': 1}
@@ -248,6 +286,15 @@ class DictDifferTests(unittest.TestCase):
 
         diffed = list(diff(first, second, ignore=['hello']))
         assert ('remove', '', [(u'привет', 1)]) == diffed[0]
+
+        diffed = list(diff(first, second, ignore=[u'привет']))
+        assert ('add', '', [('hello', 1)]) == diffed[0]
+
+    def test_dotted_key(self):
+        first = {'a.b': {'c.d': 1}}
+        second = {'a.b': {'c.d': 2}}
+        diffed = list(diff(first, second))
+        assert [('change', ['a.b', 'c.d'], (1, 2))] == diffed
 
     def test_ignore_key(self):
         first = {'a': 'a', 'b': 'b', 'c': 'c'}
@@ -260,6 +307,16 @@ class DictDifferTests(unittest.TestCase):
         second = {'a': {'aa': 1, 'ab': 'B', 'ac': 3}}
         diffed = next(diff(first, second, ignore=['a.aa']))
         assert ('change', 'a.ac', ('C', 3)) == diffed
+
+    def test_ignore_with_unicode_sub_keys(self):
+        first = {u'a': {u'aא': {u'aa': 'A'}}}
+        second = {u'a': {u'aא': {u'aa': 'B'}}}
+
+        assert len(list(diff(first, second))) == 1
+        assert len(list(diff(first, second, ignore=[u'a.aא.aa']))) == 0
+        assert len(
+            list(diff(first, second, ignore=[[u'a', u'aא', u'aa']
+                                             ]))) == 0
 
     def test_ignore_complex_key(self):
         first = {'a': {1: {'a': 'a', 'b': 'b'}}}
@@ -280,6 +337,26 @@ class DictDifferTests(unittest.TestCase):
         assert ('change', ['a', 1, 'a'], ('a', 1)) == diffed
         diffed = next(diff(second, first, ignore=[['a', 1, 'b']]))
         assert ('change', ['a', 1, 'a'], (1, 'a')) == diffed
+
+    def test_ignore_stringofintegers_keys(self):
+        a = {'1': '1', '2': '2', '3': '3'}
+        b = {'1': '1', '2': '2', '3': '99', '4': '100'}
+
+        assert list(diff(a, b, ignore={'3', '4'})) == []
+
+    def test_ignore_integers_keys(self):
+        a = {1: 1, 2: 2, 3: 3}
+        b = {1: 1, 2: 2, 3: 99, 4: 100}
+
+        assert len(list(diff(a, b, ignore={3, 4}))) == 0
+
+    def test_ignore_with_ignorecase(self):
+        class IgnoreCase(set):
+            def __contains__(self, key):
+                return set.__contains__(self, str(key).lower())
+
+        assert list(diff({'a': 1, 'b': 2}, {'A': 3, 'b': 4},
+                         ignore=IgnoreCase('a'))) == [('change', 'b', (2, 4))]
 
     def test_complex_diff(self):
         """Check regression on issue #4."""
@@ -603,6 +680,30 @@ class DotLookupTest(unittest.TestCase):
 
     def test_invalit_lookup_type(self):
         self.assertRaises(TypeError, dot_lookup, {0: '0'}, 0)
+
+
+@pytest.mark.parametrize(
+    'ignore,dot_notation,diff_size', [
+        (u'nifi.zookeeper.session.timeout', True, 1),
+        (u'nifi.zookeeper.session.timeout', False, 0),
+        ((u'nifi.zookeeper.session.timeout', ), True, 0),
+        ((u'nifi.zookeeper.session.timeout', ), False, 0),
+    ],
+)
+def test_ignore_dotted_ignore_key(ignore, dot_notation, diff_size):
+    key_to_ignore = u'nifi.zookeeper.session.timeout'
+    config_dict = OrderedDict(
+        [('address', 'devops011-slv-01.gvs.ggn'),
+            (key_to_ignore, '3 secs')])
+
+    ref_dict = OrderedDict(
+        [('address', 'devops011-slv-01.gvs.ggn'),
+            (key_to_ignore, '4 secs')])
+
+    assert diff_size == len(
+        list(diff(config_dict, ref_dict,
+                  dot_notation=dot_notation,
+                  ignore=[ignore])))
 
 
 if __name__ == "__main__":
