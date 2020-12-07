@@ -2,8 +2,8 @@
  Dictdiffer
 ============
 
-.. image:: https://img.shields.io/travis/inveniosoftware/dictdiffer.svg
-        :target: https://travis-ci.org/inveniosoftware/dictdiffer
+.. image:: https://github.com/inveniosoftware/dictdiffer/workflows/CI/badge.svg
+        :target: https://github.com/inveniosoftware/dictdiffer/actions
 
 .. image:: https://img.shields.io/coveralls/inveniosoftware/dictdiffer.svg
         :target: https://coveralls.io/r/inveniosoftware/dictdiffer

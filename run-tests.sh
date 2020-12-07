@@ -1,4 +1,5 @@
-#!/bin/sh
+#!/usr/bin/env bash
+# -*- coding: utf-8 -*-
 #
 # This file is part of Dictdiffer.
 #
@@ -10,8 +11,13 @@
 # it under the terms of the MIT License; see LICENSE file for more
 # details.
 
-pydocstyle dictdiffer && \
-isort -rc -c -df **/*.py && \
-check-manifest --ignore ".travis-*,dictdiffer/version.py" && \
-sphinx-build -qnNW docs docs/_build/html && \
-python setup.py test
+# Quit on errors
+set -o errexit
+
+# Quit on unbound symbols
+set -o nounset
+
+python -m check_manifest --ignore ".*-requirements.txt"
+python -m sphinx.cmd.build -qnNW docs docs/_build/html
+python -m pytest
+python -m sphinx.cmd.build -qnNW -b doctest docs docs/_build/doctest
