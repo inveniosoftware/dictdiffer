@@ -404,5 +404,6 @@ def revert(
                             will silently ignore this error.
     """
     return patch(
-        swap(diff_result), destination, in_place, allow_missing_keys=False
+        swap(diff_result), destination, in_place,
+        allow_missing_keys=allow_missing_keys
     )
