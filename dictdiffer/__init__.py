@@ -273,7 +273,7 @@ def diff(first, second, node=None, ignore=None, path_limit=None, expand=False,
     return _diff_recursive(first, second, node)
 
 
-def patch(diff_result, destination, in_place=False):
+def patch(diff_result, destination, in_place=False, *, allow_missing_keys=False):
     """Patch the diff result to the destination dictionary.
 
     :param diff_result: Changes returned by ``diff``.
@@ -314,7 +314,13 @@ def patch(diff_result, destination, in_place=False):
             if isinstance(dest, SET_TYPES):
                 dest -= value
             else:
-                del dest[key]
+                try:
+                    del dest[key]
+                except KeyError:
+                    if allow_missing_keys:
+                        pass
+                    else:
+                        raise
 
     patchers = {
         REMOVE: remove,
@@ -368,7 +374,7 @@ def swap(diff_result):
         yield swappers[action](node, change)
 
 
-def revert(diff_result, destination, in_place=False):
+def revert(diff_result, destination, in_place=False, *, allow_missing_keys=False):
     """Call swap function to revert patched dictionary object.
 
     Usage example:
@@ -387,4 +393,4 @@ def revert(diff_result, destination, in_place=False):
                      that revert will apply the changes directly to
                      and return the destination structure.
     """
-    return patch(swap(diff_result), destination, in_place)
+    return patch(swap(diff_result), destination, in_place, allow_missing_keys=False)
