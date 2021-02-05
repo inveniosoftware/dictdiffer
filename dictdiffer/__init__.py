@@ -273,7 +273,9 @@ def diff(first, second, node=None, ignore=None, path_limit=None, expand=False,
     return _diff_recursive(first, second, node)
 
 
-def patch(diff_result, destination, in_place=False, *, allow_missing_keys=False):
+def patch(
+    diff_result, destination, in_place=False, *, allow_missing_keys=False
+):
     """Patch the diff result to the destination dictionary.
 
     :param diff_result: Changes returned by ``diff``.
@@ -283,6 +285,9 @@ def patch(diff_result, destination, in_place=False, *, allow_missing_keys=False)
                      Setting ``in_place=True`` means that patch will apply
                      the changes directly to and return the destination
                      structure.
+    :param allow_missing_keys: By default, trying to remove a key will raise
+                              a KeyError. Setting ``allow_missing_keys=True```
+                              will silently ignore this error.
     """
     if not in_place:
         destination = deepcopy(destination)
@@ -374,7 +379,9 @@ def swap(diff_result):
         yield swappers[action](node, change)
 
 
-def revert(diff_result, destination, in_place=False, *, allow_missing_keys=False):
+def revert(
+    diff_result, destination, in_place=False, *, allow_missing_keys=False
+):
     """Call swap function to revert patched dictionary object.
 
     Usage example:
@@ -392,5 +399,10 @@ def revert(diff_result, destination, in_place=False, *, allow_missing_keys=False
                      is returned. Setting ``in_place=True`` means
                      that revert will apply the changes directly to
                      and return the destination structure.
+    :param allow_missing_keys: By default, trying to remove a key will raise
+                            a KeyError. Setting ``allow_missing_keys=True```
+                            will silently ignore this error.
     """
-    return patch(swap(diff_result), destination, in_place, allow_missing_keys=False)
+    return patch(
+        swap(diff_result), destination, in_place, allow_missing_keys=False
+    )

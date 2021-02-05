@@ -569,6 +569,14 @@ class DiffPatcherTests(unittest.TestCase):
         assert second == patch(
             [('remove', '', [('a', 'b')])], first)
 
+    def test_remove_missing_keys(self):
+        first = {'a': 'b'}
+        assert first == patch(
+            [('remove', '', [('d', 'c')])], first, allow_missing_keys=True)
+
+        self.assertRaises(
+            KeyError, patch, [('remove', '', [('d', 'c')])], first)
+
     def test_remove_list(self):
         first = {'a': [1, 2, 3]}
         second = {'a': [1, ]}
