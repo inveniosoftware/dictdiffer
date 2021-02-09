@@ -277,6 +277,35 @@ class DictDifferTests(unittest.TestCase):
         result = list(diff(first, second))
         assert result == []
 
+    def test_inf(self):
+        first = {'a': [1.0, 2.0, 3.0, 4.0]}
+        second = {'a': [1.0, 2.0, 3.0, float('inf')]}
+        diffed = next(diff(first, second))
+        assert ('change', ['a', 3], (4, float('inf'))) == diffed
+
+        first = {'a': [1.0, 2.0, 3.0, 4.0]}
+        second = {'a': [1.0, 2.0, 3.0, float('-inf')]}
+        diffed = next(diff(first, second))
+        assert ('change', ['a', 3], (4, float('-inf'))) == diffed
+
+        first = {'a': [1.0, 2.0, 3.0, float('inf')]}
+        second = {'a': [1.0, 2.0, 3.0, float('inf')]}
+        result = list(diff(first, second))
+        assert result == []
+
+        first = {'a': [1.0, 2.0, 3.0, float('inf')]}
+        second = {'a': [1.0, 2.0, 3.0, float('-inf')]}
+        diffed = next(diff(first, second))
+        assert ('change', ['a', 3], (float('inf'), float('-inf'))) == diffed
+
+    @unittest.skipIf(not HAS_NUMPY, 'NumPy is not installed')
+    def test_numpy_inf(self):
+        import numpy as np
+        first = {'a': [1.0, 2.0, 3.0, 4.0]}
+        second = {'a': [1.0, 2.0, 3.0, np.float64('inf')]}
+        diffed = next(diff(first, second))
+        assert ('change', ['a', 3], (4, np.float64('inf'))) == diffed
+
     def test_unicode_keys(self):
         first = {u'привет': 1}
         second = {'hello': 1}
