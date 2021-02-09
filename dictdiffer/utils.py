@@ -265,7 +265,8 @@ def are_different(first, second, tolerance):
 
     first_is_nan, second_is_nan = bool(first != first), bool(second != second)
     first_is_inf, second_is_inf = first == float('inf'), second == float('inf')
-    first_is_ninf, second_is_ninf = first == float('-inf'), second == float('-inf')
+    first_is_ninf = first == float('-inf')
+    second_is_ninf = second == float('-inf')
 
     if first_is_nan or second_is_nan:
         # two 'NaN' values are not different (see issue #114)
