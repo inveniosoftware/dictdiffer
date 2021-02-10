@@ -285,9 +285,10 @@ def patch(
                      Setting ``in_place=True`` means that patch will apply
                      the changes directly to and return the destination
                      structure.
-    :param allow_missing_keys: By default, trying to remove a key will raise
-                              a KeyError. Setting ``allow_missing_keys=True```
-                              will silently ignore this error.
+    :param allow_missing_keys: By default, trying to remove a missing
+                            key will raise a KeyError. Setting
+                            ``allow_missing_keys=True``` will silently
+                            ignore this error.
     """
     if not in_place:
         destination = deepcopy(destination)
@@ -399,9 +400,10 @@ def revert(
                      is returned. Setting ``in_place=True`` means
                      that revert will apply the changes directly to
                      and return the destination structure.
-    :param allow_missing_keys: By default, trying to remove a key will raise
-                            a KeyError. Setting ``allow_missing_keys=True```
-                            will silently ignore this error.
+    :param allow_missing_keys: By default, trying to remove a missing
+                            key will raise a KeyError. Setting
+                            ``allow_missing_keys=True``` will silently
+                            ignore this error.
     """
     return patch(
         swap(diff_result), destination, in_place,
