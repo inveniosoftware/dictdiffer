@@ -35,7 +35,7 @@ except ImportError:  # pragma: no cover
 
 
 def diff(first, second, node=None, ignore=None, path_limit=None, expand=False,
-         tolerance=EPSILON, dot_notation=True):
+         tolerance=EPSILON, absolute=False, dot_notation=True):
     """Compare two dictionary/list/set objects, and returns a diff result.
 
     Return an iterator with differences between two objects. The diff items
@@ -99,6 +99,7 @@ def diff(first, second, node=None, ignore=None, path_limit=None, expand=False,
                        object to limit the diff recursion depth.
     :param expand: Expand the patches.
     :param tolerance: Threshold to consider when comparing two float numbers.
+    :param absolute: Whether to use relative or absolute tolerance.
     :param dot_notation: Boolean to toggle dot notation on and off.
 
     .. versionchanged:: 0.3
@@ -266,7 +267,7 @@ def diff(first, second, node=None, ignore=None, path_limit=None, expand=False,
 
         else:
             # Compare string and numerical types and yield `change` flag.
-            if are_different(_first, _second, tolerance):
+            if are_different(_first, _second, tolerance, absolute):
                 yield CHANGE, dotted_node, (deepcopy(_first),
                                             deepcopy(_second))
 

@@ -104,6 +104,9 @@ class DictDifferTests(unittest.TestCase):
         diffed = next(diff(first, second, tolerance=0.01))
         assert ('change', 'a', (10.0, 10.5)) == diffed
 
+        diffed = list(diff(first, second, tolerance=0.5, absolute=True))
+        assert [] == diffed
+
     def test_path_limit_as_list(self):
         first = {}
         second = {'author': {'last_name': 'Doe', 'first_name': 'John'}}

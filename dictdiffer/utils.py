@@ -252,7 +252,7 @@ def dot_lookup(source, lookup, parent=False):
     return value
 
 
-def are_different(first, second, tolerance):
+def are_different(first, second, tolerance, absolute):
     """Check if 2 values are different.
 
     In case of numerical values, the tolerance is used to check if the values
@@ -270,6 +270,7 @@ def are_different(first, second, tolerance):
         return not (first_is_nan and second_is_nan)
     elif isinstance(first, num_types) and isinstance(second, num_types):
         # two numerical values are compared with tolerance
-        return abs(first-second) > tolerance * max(abs(first), abs(second))
+        multiplier = (max(abs(first), abs(second)) if not absolute else 1)
+        return abs(first-second) > tolerance * multiplier
     # we got different values
     return True
