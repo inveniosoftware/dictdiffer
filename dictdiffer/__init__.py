@@ -11,6 +11,7 @@
 """Dictdiffer is a helper module to diff and patch dictionaries."""
 
 from copy import deepcopy
+from pprint import pformat
 
 from ._compat import (PY2, Iterable, MutableMapping, MutableSequence,
                       MutableSet, string_types, text_type)
@@ -20,7 +21,8 @@ from .version import __version__
 (ADD, REMOVE, CHANGE) = (
     'add', 'remove', 'change')
 
-__all__ = ('diff', 'patch', 'swap', 'revert', 'dot_lookup', '__version__')
+__all__ = ('diff', 'patch', 'swap', 'revert', 'dot_lookup', 'assert_no_diff',
+           '__version__')
 
 DICT_TYPES = (MutableMapping, )
 LIST_TYPES = (MutableSequence, )
@@ -388,3 +390,27 @@ def revert(diff_result, destination, in_place=False):
                      and return the destination structure.
     """
     return patch(swap(diff_result), destination, in_place)
+
+
+def assert_no_diff(*args, **kwargs):
+    """Compare two dictionary/list/set objects and raise error on difference.
+
+    When there is a difference, this will print a formatted diff.
+    This is especially useful for pytest.
+
+    Usage example:
+
+        >>> from dictdiffer import assert_no_diff
+        >>> result = {'a': 'b'}
+        >>> expected = {'a': 'c'}
+        >>> assert_no_diff(result, expected)
+        Traceback (most recent call last):
+          File "<stdin>", line 1, in <module>
+          File "<stdin>", line 14, in assert_no_diff
+        AssertionError: [('change', 'a', ('b', 'c'))]
+
+    :param args: Positional arguments to the ``diff`` function.
+    :param second: Named arguments to the ``diff`` function.
+    """
+    d = [d for d in diff(*args, **kwargs)]
+    assert not d, pformat(d)
