@@ -274,7 +274,7 @@ def diff(first, second, node=None, ignore=None, path_limit=None, expand=False,
 
 
 def patch(
-    diff_result, destination, in_place=False, *, allow_missing_keys=False
+    diff_result, destination, in_place=False, allow_missing_keys=False
 ):
     """Patch the diff result to the destination dictionary.
 
@@ -381,7 +381,7 @@ def swap(diff_result):
 
 
 def revert(
-    diff_result, destination, in_place=False, *, allow_missing_keys=False
+    diff_result, destination, in_place=False, allow_missing_keys=False
 ):
     """Call swap function to revert patched dictionary object.
 
