@@ -64,6 +64,18 @@ class MergerTest(unittest.TestCase):
             self.assertEqual(patch(m.unified_patches, lca),
                              expected_value)
 
+    def test_run_with_ignore(self):
+        lca = {'changeme': 'Jo', 'ignore': 'Something'}
+        first = {'changeme': 'Joe', 'ignore': 'Nothing'}
+        second = {'changeme': 'Jo', 'ignore': ''}
+
+        m = Merger(lca, first, second, {}, ignore={'ignore'})
+
+        try:
+            m.run()
+        except UnresolvedConflictsException:
+            self.fail('UnresolvedConflictsException should not be raised')
+
 
 if __name__ == '__main__':
     unittest.main()
