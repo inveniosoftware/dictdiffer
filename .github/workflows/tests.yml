@@ -25,7 +25,7 @@ on:
 
 jobs:
   Tests:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-18.04
     strategy:
       matrix:
           python-version: [3.6, 3.7, 3.8]
@@ -44,9 +44,6 @@ jobs:
         run: |
           sudo apt-get install libxml2-dev libxslt1-dev
           python -m pip install --upgrade pip setuptools py wheel requirements-builder
-          if [ ! -f /usr/include/xlocale.h ]; then
-            sudo ln -s /usr/include/x86_64-linux-gnu/bits/types/__locale_t.h /usr/include/xlocale.h;
-          fi;
           requirements-builder -e all --level=${{ matrix.requirements-level }} setup.py > .${{ matrix.requirements-level }}-${{ matrix.python-version }}-requirements.txt
 
       - name: Cache pip
