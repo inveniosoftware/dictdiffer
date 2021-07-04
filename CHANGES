@@ -84,7 +84,7 @@ Version 0.1.0 (released 2014-09-01)
 - Fix for issues with strings handled as iterables. (#6)
 - Fix for integer keys. (#12)
 - Regression test for complex dictionaries. (#4)
-- Better testing with Travis CI, tox, pytest, code coverage. (#10)
+- Better testing with Github actions, tox, pytest, code coverage. (#10)
 - Initial release of documentation on ReadTheDocs. (#21 #24)
 - Support for Python 3. (#15)
 

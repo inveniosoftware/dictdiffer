@@ -2,8 +2,8 @@
  Dictdiffer
 ============
 
-.. image:: https://img.shields.io/travis/inveniosoftware/dictdiffer.svg
-        :target: https://travis-ci.org/inveniosoftware/dictdiffer
+.. image:: https://github.com/inveniosoftware/dictdiffer/workflows/CI/badge.svg
+        :target: https://github.com/inveniosoftware/dictdiffer/actions
 
 .. image:: https://img.shields.io/coveralls/inveniosoftware/dictdiffer.svg
         :target: https://coveralls.io/r/inveniosoftware/dictdiffer
@@ -35,7 +35,7 @@ Dictdiffer is on PyPI so all you need is: ::
 Documentation
 =============
 
-Documentation is readable at http://dictdiffer.readthedocs.io or can be
+Documentation is readable at https://dictdiffer.readthedocs.io or can be
 built using Sphinx: ::
 
     pip install dictdiffer[docs]

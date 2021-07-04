@@ -13,3 +13,4 @@ include .lgtm MAINTAINERS
 include docs/*.rst docs/*.py docs/Makefile docs/requirements.txt
 include *.py *.sh
 include tox.ini tests/*.py
+recursive-include .github/workflows *.yml

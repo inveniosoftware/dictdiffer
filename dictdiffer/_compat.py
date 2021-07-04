@@ -20,12 +20,12 @@ except NameError:
     num_types = int, float
 
 if PY2:
-    from collections import (
-        MutableMapping, MutableSet, MutableSequence, Iterable)
+    from collections import (Iterable, MutableMapping, MutableSequence,
+                             MutableSet)
     from itertools import izip_longest as _zip_longest
 else:
-    from collections.abc import (
-        MutableMapping, MutableSet, MutableSequence, Iterable)
+    from collections import (Iterable, MutableMapping, MutableSequence,
+                             MutableSet)
     from itertools import zip_longest as _zip_longest
 
 izip_longest = _zip_longest

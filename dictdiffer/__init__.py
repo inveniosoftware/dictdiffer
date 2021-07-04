@@ -12,8 +12,6 @@
 
 from copy import deepcopy
 
-import pkg_resources
-
 from ._compat import (PY2, Iterable, MutableMapping, MutableSequence,
                       MutableSet, string_types, text_type)
 from .utils import EPSILON, PathLimit, are_different, dot_lookup
@@ -29,15 +27,11 @@ LIST_TYPES = (MutableSequence, )
 SET_TYPES = (MutableSet, )
 
 try:
-    pkg_resources.get_distribution('numpy')
-except pkg_resources.DistributionNotFound:  # pragma: no cover
-    HAS_NUMPY = False
-else:
-    HAS_NUMPY = True
-
     import numpy
-
+    HAS_NUMPY = True
     LIST_TYPES += (numpy.ndarray, )
+except ImportError:  # pragma: no cover
+    HAS_NUMPY = False
 
 
 def diff(first, second, node=None, ignore=None, path_limit=None, expand=False,

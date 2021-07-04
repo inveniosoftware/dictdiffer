@@ -20,24 +20,21 @@ from setuptools import find_packages, setup
 readme = open('README.rst').read()
 
 tests_require = [
-    'check-manifest>=0.25',
-    'coverage>=4.0',
-    'isort>=4.2.2',
+    'pytest-invenio>=1.4.0',
     'mock>=1.3.0',
-    'pydocstyle>=1.0.0',
-    'pytest-cov>=1.8.0',
-    'pytest-pep8>=1.0.6',
-    'pytest>=2.8.0',
     'tox>=3.7.0',
 ]
 
 extras_require = {
     'docs': [
-        'Sphinx>=1.4.4',
-        'sphinx-rtd-theme>=0.1.9',
+        'Sphinx>=3',
+        'sphinx-rtd-theme>=0.2',
     ],
     'numpy': [
-        'numpy>=1.11.0',
+        'numpy>=1.13.0;python_version<"3.7"',
+        'numpy>=1.15.0;python_version<"3.8"',
+        'numpy>=1.18.0;python_version<"3.9"',
+        'numpy>=1.20.0;python_version>="3.9"',
     ],
     'tests': tests_require,
 }
