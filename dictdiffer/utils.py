@@ -8,7 +8,6 @@
 # details.
 
 """Utils gathers helper functions, classes for the dictdiffer module."""
-
 import sys
 
 from ._compat import izip_longest, num_types, string_types
@@ -248,7 +247,7 @@ def dot_lookup(source, lookup, parent=False):
     for key in keys:
         if isinstance(value, list):
             key = int(key)
-        value = value[key]
+        value = value.__dict__ if key == '__dict__' else value[key]
     return value
 
 
