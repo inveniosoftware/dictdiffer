@@ -11,6 +11,8 @@
 # details.
 import datetime
 import decimal
+import enum
+import pathlib
 import unittest
 import uuid
 from collections import OrderedDict
@@ -18,11 +20,21 @@ from types import SimpleNamespace
 
 import pytest
 
-from dictdiffer import HAS_NUMPY, diff, dot_lookup, patch, revert, swap
+from dictdiffer import ALLOW_IMPORT  # noqa
+from dictdiffer import HAS_NUMPY
+from dictdiffer import TRANSFORMS  # noqa
 from dictdiffer import VALUE_KEY
+from dictdiffer import add_transform
+from dictdiffer import allow_import
+from dictdiffer import diff
+from dictdiffer import dot_lookup
+from dictdiffer import patch
 from dictdiffer import reconstruct
 from dictdiffer import represent
-from dictdiffer._compat import MutableMapping, MutableSequence, MutableSet
+from dictdiffer import revert
+from dictdiffer import swap
+from dictdiffer._compat import MutableMapping
+from dictdiffer._compat import MutableSequence
 from dictdiffer.utils import PathLimit
 
 
@@ -747,6 +759,25 @@ class DotLookupTest(unittest.TestCase):
         assert dot_lookup(source, 'a.__dict__.b.0') == 'c'
 
 
+class TestConfigurationFunctions(unittest.TestCase):
+
+    def test_add_transform(self):
+        global TRANSFORMS
+        add_transform(1, lambda value: str(value), lambda value: int(value))
+        assert int in [transform[0] for transform in TRANSFORMS]
+
+        with self.assertRaisesRegex(AssertionError, r'Could not reconstruct \(str\) 1 to \(int\) 1'):
+           add_transform(1, lambda value: str(value), lambda value: value)
+
+    def test_allow_import(self):
+        global ALLOW_IMPORT
+        allow_import('functools')
+        assert 'functools' in ALLOW_IMPORT
+
+        with self.assertRaises(ImportError):
+            allow_import('not_existing_module')
+
+
 @pytest.mark.parametrize(
     'ignore,dot_notation,diff_size', [
         (u'nifi.zookeeper.session.timeout', True, 1),
@@ -777,7 +808,11 @@ transform_test_mapping = (
     ((1,),),
     (datetime.date(2021, 7, 6), {'module': 'datetime', 'name': 'date', 'value': '2021-07-06'}),
     (datetime.datetime(2021, 7, 6, 13, 21), {'module': 'datetime', 'name': 'datetime', 'value': '2021-07-06T13:21:00'}),
+    (datetime.time(13, 1, 10), {'module': 'datetime', 'name': 'time', 'value': '13:01:10'}),
+    (datetime.timedelta(days=1), {'module': 'datetime', 'name': 'timedelta', 'value': 24*60*60}),
     (decimal.Decimal('1.23'), {'module': 'decimal', 'name': 'Decimal', 'value': '1.23'}),
+    (enum.Enum('TestEnum', 'VALUE1 VALUE2').VALUE1, {'module': 'enum', 'name': 'Enum', 'value': 1}),
+    (pathlib.Path('/tmp'), {'module': 'pathlib', 'name': 'Path', 'value': '/tmp'}),
     (
         uuid.UUID('cc37d8f4-6b9e-4c88-b88f-03f7079c99dd'),
         {'module': 'uuid', 'name': 'UUID', 'value': 'cc37d8f4-6b9e-4c88-b88f-03f7079c99dd'}
@@ -804,6 +839,8 @@ def test_reconstruct_values(spec):
     else:
         representation = {VALUE_KEY: spec[1]}
         expected_value = spec[0]
+        if issubclass(type(expected_value), enum.Enum):
+            expected_value = expected_value.value
 
     assert reconstruct(representation) == expected_value
 
