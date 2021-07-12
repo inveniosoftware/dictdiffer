@@ -9,14 +9,32 @@
 # Dictdiffer is free software; you can redistribute it and/or modify
 # it under the terms of the MIT License; see LICENSE file for more
 # details.
-
+import datetime
+import decimal
+import enum
+import pathlib
 import unittest
+import uuid
 from collections import OrderedDict
+from types import SimpleNamespace
 
 import pytest
 
-from dictdiffer import HAS_NUMPY, diff, dot_lookup, patch, revert, swap
-from dictdiffer._compat import MutableMapping, MutableSequence, MutableSet
+from dictdiffer import ALLOW_IMPORT  # noqa
+from dictdiffer import HAS_NUMPY
+from dictdiffer import TRANSFORMS  # noqa
+from dictdiffer import VALUE_KEY
+from dictdiffer import add_transform
+from dictdiffer import allow_import
+from dictdiffer import diff
+from dictdiffer import dot_lookup
+from dictdiffer import patch
+from dictdiffer import reconstruct
+from dictdiffer import represent
+from dictdiffer import revert
+from dictdiffer import swap
+from dictdiffer._compat import MutableMapping
+from dictdiffer._compat import MutableSequence
 from dictdiffer.utils import PathLimit
 
 
@@ -350,6 +368,12 @@ class DictDifferTests(unittest.TestCase):
 
         assert len(list(diff(a, b, ignore={3, 4}))) == 0
 
+    def test_ignore_object_key(self):
+        first = SimpleNamespace(a=1, b=2)
+        second = SimpleNamespace(a=1, b=3)
+        assert list(diff(first, second)) == [('change', '__dict__.b', (2, 3))]
+        assert list(diff(first, second, ignore=['__dict__.b'])) == []
+
     def test_ignore_with_ignorecase(self):
         class IgnoreCase(set):
             def __contains__(self, key):
@@ -639,6 +663,34 @@ class DiffPatcherTests(unittest.TestCase):
         patched_in_place = patch(changes, first, in_place=True)
         assert first == patched_in_place
 
+    def test_object_represent(self):
+        first = []
+        second = [SimpleNamespace(a=1)]
+        changes = list(diff(first, second))
+        assert changes == [('add', '', [(0, {
+            VALUE_KEY: {'module': 'types', 'name': 'SimpleNamespace', 'value': {'a': 1}}}
+        )])]
+
+    def test_object_support__diff(self):
+        first = [SimpleNamespace(a=1)]
+        second = [SimpleNamespace(a=2)]
+        changes = list(diff(first, second))
+        assert changes == [('change', [0, '__dict__', 'a'], (1, 2))]
+
+    def test_object_support__patch(self):
+        first = SimpleNamespace(a=1)
+        second = SimpleNamespace(a=2)
+        delta = diff(first, second)
+        assert patch(delta, first).a == 2
+
+    def test_mapping_types_with_dict_dunder_treated_as_dicts(self):
+        first = OrderedDict({'a': 1})
+        second = OrderedDict({'a': 2})
+        assert hasattr(first, '__dict__')
+
+        changes = list(diff(first, second))
+        assert changes == [('change', 'a', (1, 2))]
+
 
 class SwapperTests(unittest.TestCase):
     def test_addition(self):
@@ -665,6 +717,26 @@ class SwapperTests(unittest.TestCase):
         reverted = revert(diffed, second)
         assert reverted == first
 
+    def test_revert_objects(self):
+        first = SimpleNamespace(a=[1, 2])
+        second = SimpleNamespace(a=[])
+        diffed = diff(first, second)
+        patched = patch(diffed, first)
+        assert patched == second
+        diffed = diff(first, second)
+        reverted = revert(diffed, second)
+        assert reverted == first
+
+    def test_reconstruct_objects(self):
+        first = [SimpleNamespace(a=1)]
+        second = [SimpleNamespace(a=1, date=datetime.date(2021, 7, 6))]
+        diffed = diff(first, second)
+        patched = patch(diffed, first)
+        assert patched == second
+        diffed = diff(first, second)
+        reverted = revert(diffed, second)
+        assert reverted == first
+
     def test_list_of_different_length(self):
         """Check that one can revert list with different length."""
         first = [1]
@@ -674,12 +746,36 @@ class SwapperTests(unittest.TestCase):
 
 
 class DotLookupTest(unittest.TestCase):
+
     def test_list_lookup(self):
         source = {0: '0'}
         assert dot_lookup(source, [0]) == '0'
 
-    def test_invalit_lookup_type(self):
+    def test_invalid_lookup_type(self):
         self.assertRaises(TypeError, dot_lookup, {0: '0'}, 0)
+
+    def test_object_lookup(self):
+        source = {'a': SimpleNamespace(b=['c'])}
+        assert dot_lookup(source, 'a.__dict__.b.0') == 'c'
+
+
+class TestConfigurationFunctions(unittest.TestCase):
+
+    def test_add_transform(self):
+        global TRANSFORMS
+        add_transform(1, lambda value: str(value), lambda value: int(value))
+        assert int in [transform[0] for transform in TRANSFORMS]
+
+        with self.assertRaisesRegex(AssertionError, r'Could not reconstruct \(str\) 1 to \(int\) 1'):
+           add_transform(1, lambda value: str(value), lambda value: value)
+
+    def test_allow_import(self):
+        global ALLOW_IMPORT
+        allow_import('functools')
+        assert 'functools' in ALLOW_IMPORT
+
+        with self.assertRaises(ImportError):
+            allow_import('not_existing_module')
 
 
 @pytest.mark.parametrize(
@@ -699,11 +795,54 @@ def test_ignore_dotted_ignore_key(ignore, dot_notation, diff_size):
     ref_dict = OrderedDict(
         [('address', 'devops011-slv-01.gvs.ggn'),
             (key_to_ignore, '4 secs')])
-
     assert diff_size == len(
         list(diff(config_dict, ref_dict,
                   dot_notation=dot_notation,
                   ignore=[ignore])))
+
+transform_test_mapping = (
+    (1,),
+    ('a',),
+    ({'a': 1},),
+    ([1],),
+    ((1,),),
+    (datetime.date(2021, 7, 6), {'module': 'datetime', 'name': 'date', 'value': '2021-07-06'}),
+    (datetime.datetime(2021, 7, 6, 13, 21), {'module': 'datetime', 'name': 'datetime', 'value': '2021-07-06T13:21:00'}),
+    (datetime.time(13, 1, 10), {'module': 'datetime', 'name': 'time', 'value': '13:01:10'}),
+    (datetime.timedelta(days=1), {'module': 'datetime', 'name': 'timedelta', 'value': 24*60*60}),
+    (decimal.Decimal('1.23'), {'module': 'decimal', 'name': 'Decimal', 'value': '1.23'}),
+    (enum.Enum('TestEnum', 'VALUE1 VALUE2').VALUE1, {'module': 'enum', 'name': 'Enum', 'value': 1}),
+    (pathlib.Path('/tmp'), {'module': 'pathlib', 'name': 'Path', 'value': '/tmp'}),
+    (
+        uuid.UUID('cc37d8f4-6b9e-4c88-b88f-03f7079c99dd'),
+        {'module': 'uuid', 'name': 'UUID', 'value': 'cc37d8f4-6b9e-4c88-b88f-03f7079c99dd'}
+    ),
+    (SimpleNamespace(a=1), {'module': 'types', 'name': 'SimpleNamespace', 'value': {'a': 1}}),
+)
+
+@pytest.mark.parametrize('spec', transform_test_mapping)
+def test_represent_values(spec):
+    value = spec[0]
+
+    representation = represent(value)
+
+    if len(spec) == 1:
+        assert representation == value
+    else:
+        assert representation == {VALUE_KEY: spec[1]}
+
+
+@pytest.mark.parametrize('spec', transform_test_mapping)
+def test_reconstruct_values(spec):
+    if len(spec) == 1:
+        representation = expected_value = spec[0]
+    else:
+        representation = {VALUE_KEY: spec[1]}
+        expected_value = spec[0]
+        if issubclass(type(expected_value), enum.Enum):
+            expected_value = expected_value.value
+
+    assert reconstruct(representation) == expected_value
 
 
 if __name__ == "__main__":
