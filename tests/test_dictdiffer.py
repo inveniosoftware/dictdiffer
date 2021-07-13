@@ -704,3 +704,7 @@ def test_ignore_dotted_ignore_key(ignore, dot_notation, diff_size):
         list(diff(config_dict, ref_dict,
                   dot_notation=dot_notation,
                   ignore=[ignore])))
+
+
+if __name__ == "__main__":
+    unittest.main()
