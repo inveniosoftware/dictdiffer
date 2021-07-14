@@ -1,12 +1,11 @@
 # This file is part of Dictdiffer.
 #
-# Copyright (C) 2015 CERN.
-# Copyright (C) 2017, 2019 ETH Zurich, Swiss Data Science Center, Jiri Kuncar.
+# Copyright (C) 2021 CERN.
 #
 # Dictdiffer is free software; you can redistribute it and/or modify
 # it under the terms of the MIT License; see LICENSE file for more
 # details.
-"""Testing Utils gathers helper functions for testing."""
+"""Define helper functions for testing."""
 
 from pprint import pformat
 
@@ -21,7 +20,7 @@ def assert_no_diff(*args, **kwargs):
 
     Usage example:
 
-        >>> from dictdiffer.testing_utils import assert_no_diff
+        >>> from dictdiffer.testing import assert_no_diff
         >>> result = {'a': 'b'}
         >>> expected = {'a': 'c'}
         >>> assert_no_diff(result, expected)

@@ -1,6 +1,6 @@
 # This file is part of Dictdiffer.
 #
-# Copyright (C) 2015 CERN.
+# Copyright (C) 2021 CERN.
 #
 # Dictdiffer is free software; you can redistribute it and/or modify
 # it under the terms of the MIT License; see LICENSE file for more
@@ -10,7 +10,7 @@ import unittest
 
 import pytest
 
-from dictdiffer.testing_utils import assert_no_diff
+from dictdiffer.testing import assert_no_diff
 
 
 class AssertNoDiffTest(unittest.TestCase):
