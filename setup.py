@@ -20,7 +20,8 @@ readme = open('README.rst').read()
 
 tests_require = [
     'mock>=1.3.0',
-    'pytest',
+    'pytest<6;python_version<="3.5"',
+    'pytest;python_version>"3.5"',
     'pytest-cov',
     'pytest-isort',
     'pytest-pep8',
