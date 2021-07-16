@@ -10,7 +10,7 @@
 
 """Dictdiffer is a helper module to diff and patch dictionaries."""
 
-from collections import Iterable, MutableMapping, MutableSequence, MutableSet
+from collections.abc import Iterable, MutableMapping, MutableSequence, MutableSet
 from copy import deepcopy
 
 from .utils import EPSILON, PathLimit, are_different, dot_lookup

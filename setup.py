@@ -19,8 +19,13 @@ from setuptools import find_packages, setup
 readme = open('README.rst').read()
 
 tests_require = [
-    'pytest-invenio>=1.4.0',
     'mock>=1.3.0',
+    'pytest',
+    'pytest-cov',
+    'pytest-isort',
+    'pytest-pep8',
+    'pytest-pycodestyle',
+    'pytest-pydocstyle',
     'tox>=3.7.0',
 ]
 
