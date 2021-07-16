@@ -10,10 +10,9 @@
 
 """Dictdiffer is a helper module to diff and patch dictionaries."""
 
+from collections import Iterable, MutableMapping, MutableSequence, MutableSet
 from copy import deepcopy
 
-from ._compat import (PY2, Iterable, MutableMapping, MutableSequence,
-                      MutableSet, string_types, text_type)
 from .utils import EPSILON, PathLimit, are_different, dot_lookup
 from .version import __version__
 
@@ -128,7 +127,7 @@ def diff(first, second, node=None, ignore=None, path_limit=None, expand=False,
                 return value,
             elif isinstance(value, list):
                 return tuple(value)
-            elif not dot_notation and isinstance(value, string_types):
+            elif not dot_notation and isinstance(value, str):
                 return value,
             return value
 
@@ -137,7 +136,7 @@ def diff(first, second, node=None, ignore=None, path_limit=None, expand=False,
     def dotted(node, default_type=list):
         """Return dotted notation."""
         if dot_notation and \
-            all(map(lambda x: isinstance(x, string_types) and '.' not in x,
+            all(map(lambda x: isinstance(x, str) and '.' not in x,
                 node)):
             return '.'.join(node)
         else:
@@ -299,7 +298,7 @@ def patch(diff_result, destination, in_place=False):
 
     def change(node, changes):
         dest = dot_lookup(destination, node, parent=True)
-        if isinstance(node, string_types):
+        if isinstance(node, str):
             last_node = node.split('.')[-1]
         else:
             last_node = node[-1]
