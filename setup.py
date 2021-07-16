@@ -19,14 +19,17 @@ from setuptools import find_packages, setup
 readme = open('README.rst').read()
 
 tests_require = [
+    'check-manifest>=0.42',
     'mock>=1.3.0',
-    'pytest<6;python_version<="3.5"',
-    'pytest;python_version>"3.5"',
-    'pytest-cov',
-    'pytest-isort',
-    'pytest-pep8',
-    'pytest-pycodestyle',
-    'pytest-pydocstyle',
+    'pytest==5.4.3;python_version<="3.5"',
+    'pytest>=6;python_version>"3.5"',
+    'pytest-cov>=2.10.1',
+    'pytest-isort>=1.2.0',
+    'pytest-pycodestyle>=2;python_version<="3.5"',
+    'pytest-pycodestyle>=2.2.0;python_version>"3.5"',
+    'pytest-pydocstyle>=2;python_version<="3.5"',
+    'pytest-pydocstyle>=2.2.0;python_version>"3.5"',
+    'sphinx>=3',
     'tox>=3.7.0',
 ]
 
