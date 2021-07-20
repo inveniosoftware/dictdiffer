@@ -9,6 +9,7 @@
 
 """Utils gathers helper functions, classes for the dictdiffer module."""
 
+import math
 import sys
 from itertools import zip_longest
 
@@ -252,7 +253,7 @@ def dot_lookup(source, lookup, parent=False):
     return value
 
 
-def are_different(first, second, tolerance):
+def are_different(first, second, tolerance, absolute_tolerance=None):
     """Check if 2 values are different.
 
     In case of numerical values, the tolerance is used to check if the values
@@ -270,6 +271,11 @@ def are_different(first, second, tolerance):
         return not (first_is_nan and second_is_nan)
     elif isinstance(first, num_types) and isinstance(second, num_types):
         # two numerical values are compared with tolerance
-        return abs(first-second) > tolerance * max(abs(first), abs(second))
+        return not math.isclose(
+            first,
+            second,
+            rel_tol=tolerance or 0,
+            abs_tol=absolute_tolerance or 0,
+        )
     # we got different values
     return True
