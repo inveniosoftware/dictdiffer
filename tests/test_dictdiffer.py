@@ -11,7 +11,8 @@
 # details.
 
 import unittest
-from collections import MutableMapping, MutableSequence, OrderedDict
+from collections import OrderedDict
+from collections.abc import MutableMapping, MutableSequence
 
 import pytest
 
@@ -105,7 +106,7 @@ class DictDifferTests(unittest.TestCase):
 
         first = {'a': 10.0, 'b': 1.0e-15}
         second = {'a': 10.5, 'b': 2.5e-15}
-        diffed = list(diff(
+        diffed = sorted(diff(
             first, second, tolerance=0.01
         ))
         assert [
@@ -113,12 +114,12 @@ class DictDifferTests(unittest.TestCase):
             ('change', 'b', (1.0e-15, 2.5e-15)),
         ] == diffed
 
-        diffed = list(diff(
+        diffed = sorted(diff(
             first, second, tolerance=0.01, absolute_tolerance=1e-12
         ))
         assert [('change', 'a', (10.0, 10.5))] == diffed
 
-        diffed = list(diff(
+        diffed = sorted(diff(
             first, second, tolerance=0.01, absolute_tolerance=1e-18
         ))
         assert [
@@ -126,17 +127,17 @@ class DictDifferTests(unittest.TestCase):
             ('change', 'b', (1.0e-15, 2.5e-15)),
         ] == diffed
 
-        diffed = list(diff(
+        diffed = sorted(diff(
             first, second, tolerance=0.1, absolute_tolerance=1e-18
         ))
         assert [('change', 'b', (1.0e-15, 2.5e-15))] == diffed
 
-        diffed = list(diff(
+        diffed = sorted(diff(
             first, second, tolerance=0.1, absolute_tolerance=1e-12
         ))
         assert [] == diffed
 
-        diffed = list(diff(
+        diffed = sorted(diff(
             first, second, tolerance=None, absolute_tolerance=None
         ))
         assert [
@@ -146,7 +147,7 @@ class DictDifferTests(unittest.TestCase):
 
         first = {'a': 10.0, 'b': 1.0e-15}
         second = {'a': 10.0, 'b': 1.0e-15}
-        diffed = list(diff(
+        diffed = sorted(diff(
             first, second, tolerance=None, absolute_tolerance=None
         ))
         assert [] == diffed
