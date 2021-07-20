@@ -11,12 +11,11 @@
 # details.
 
 import unittest
-from collections import OrderedDict
+from collections import MutableMapping, MutableSequence, OrderedDict
 
 import pytest
 
 from dictdiffer import HAS_NUMPY, diff, dot_lookup, patch, revert, swap
-from dictdiffer._compat import MutableMapping, MutableSequence, MutableSet
 from dictdiffer.utils import PathLimit
 
 
