@@ -672,10 +672,10 @@ class DiffPatcherTests(unittest.TestCase):
         )])]
 
     def test_object_support__diff(self):
-        first = [SimpleNamespace(a=1)]
-        second = [SimpleNamespace(a=2)]
+        first = [SimpleNamespace(a=1, b=[])]
+        second = [SimpleNamespace(a=2, b=[1])]
         changes = list(diff(first, second))
-        assert changes == [('change', [0, '__dict__', 'a'], (1, 2))]
+        assert changes == [('change', [0, '__dict__', 'a'], (1, 2)), ('add', [0, '__dict__', 'b'], [(0, 1)])]
 
     def test_object_support__patch(self):
         first = SimpleNamespace(a=1)

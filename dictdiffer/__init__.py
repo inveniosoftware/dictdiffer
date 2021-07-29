@@ -270,8 +270,7 @@ def diff(first, second, node=None, ignore=None, path_limit=None, expand=False,
                     collect = []
                     collect_recurred = []
                     for key in addition:
-                        if not isinstance(_second[key],
-                                          SET_TYPES + LIST_TYPES + DICT_TYPES):
+                        if not isinstance(_second[key], ALL_TYPES):
                             collect.append((key, represent(_second[key])))
                         elif path_limit.path_is_limit(_node + [key]):
                             collect.append((key, represent(_second[key])))
