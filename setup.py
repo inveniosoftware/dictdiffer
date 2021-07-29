@@ -13,15 +13,23 @@
 from __future__ import absolute_import, print_function
 
 import os
-import re
 
 from setuptools import find_packages, setup
 
 readme = open('README.rst').read()
 
 tests_require = [
-    'pytest-invenio>=1.4.0',
+    'check-manifest>=0.42',
     'mock>=1.3.0',
+    'pytest==5.4.3;python_version<="3.5"',
+    'pytest>=6;python_version>"3.5"',
+    'pytest-cov>=2.10.1',
+    'pytest-isort>=1.2.0',
+    'pytest-pycodestyle>=2;python_version<="3.5"',
+    'pytest-pycodestyle>=2.2.0;python_version>"3.5"',
+    'pytest-pydocstyle>=2;python_version<="3.5"',
+    'pytest-pydocstyle>=2.2.0;python_version>"3.5"',
+    'sphinx>=3',
     'tox>=3.7.0',
 ]
 
@@ -86,13 +94,12 @@ setup(
     setup_requires=setup_requires,
     tests_require=tests_require,
     classifiers=[
-        'Programming Language :: Python :: 2',
-        'Programming Language :: Python :: 2.7',
         'Programming Language :: Python :: 3',
-        'Programming Language :: Python :: 3.4',
         'Programming Language :: Python :: 3.5',
         'Programming Language :: Python :: 3.6',
         'Programming Language :: Python :: 3.7',
+        'Programming Language :: Python :: 3.8',
+        'Programming Language :: Python :: 3.9',
         'Development Status :: 5 - Production/Stable',
         'Intended Audience :: Developers',
         'License :: OSI Approved :: MIT License',

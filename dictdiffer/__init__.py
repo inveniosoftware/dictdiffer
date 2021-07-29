@@ -15,10 +15,11 @@ import enum
 import importlib
 import pathlib
 import uuid
+
+from collections.abc import (Iterable, MutableMapping, MutableSequence,
+                             MutableSet)
 from copy import deepcopy
 
-from ._compat import (PY2, Iterable, MutableMapping, MutableSequence,
-                      MutableSet, string_types, text_type)
 from .utils import EPSILON, PathLimit, are_different, dot_lookup
 from .version import __version__
 
@@ -57,7 +58,7 @@ except ImportError:  # pragma: no cover
 
 
 def diff(first, second, node=None, ignore=None, path_limit=None, expand=False,
-         tolerance=EPSILON, dot_notation=True):
+         tolerance=EPSILON, absolute_tolerance=None, dot_notation=True):
     """Compare two dictionary/list/set objects, and returns a diff result.
 
     Return an iterator with differences between two objects. The diff items
@@ -127,22 +128,24 @@ def diff(first, second, node=None, ignore=None, path_limit=None, expand=False,
                        object to limit the diff recursion depth.
     :param expand: Expand the patches.
     :param tolerance: Threshold to consider when comparing two float numbers.
+    :param absolute_tolerance: Absolute threshold to consider when comparing
+                               two float numbers.
     :param dot_notation: Boolean to toggle dot notation on and off.
 
     In general:
-    
+
     - `diff` is a generator that yields zero or more tuples of the format
     `(op, path, values)`, where
     - `op` is one of the strings 'add', 'change' or 'remove'
-    - `path` is by default a dot-separated string of keys from the root of the 
+    - `path` is by default a dot-separated string of keys from the root of the
     structure to the point of difference.
         - If parameter `dot_notation` is set to False, path is a list of
         separate key strings instead.
     - `values` are one or more tuples containing:
         - Key/value pairs for 'add' and 'remove'; keys for lists are indexes
         - Previous/new values for 'change', key being a part of the path in this case
-        - Several value tuples sharing the same op and path are wrapped in a 
-        list, unless you specify `expand=True`, in which case they all 
+        - Several value tuples sharing the same op and path are wrapped in a
+        list, unless you specify `expand=True`, in which case they all
         get a separate (op, path, values) tuple.
 
     .. versionchanged:: 0.3
@@ -172,7 +175,7 @@ def diff(first, second, node=None, ignore=None, path_limit=None, expand=False,
                 return value,
             elif isinstance(value, list):
                 return tuple(value)
-            elif not dot_notation and isinstance(value, string_types):
+            elif not dot_notation and isinstance(value, str):
                 return value,
             return value
 
@@ -181,7 +184,7 @@ def diff(first, second, node=None, ignore=None, path_limit=None, expand=False,
     def dotted(node, default_type=list):
         """Return dotted notation."""
         if dot_notation and \
-            all(map(lambda x: isinstance(x, string_types) and '.' not in x,
+            all(map(lambda x: isinstance(x, str) and '.' not in x,
                 node)):
             return '.'.join(node)
         else:
@@ -317,7 +320,7 @@ def diff(first, second, node=None, ignore=None, path_limit=None, expand=False,
 
         else:
             # Compare string and numerical types and yield `change` flag.
-            if are_different(_first, _second, tolerance):
+            if are_different(_first, _second, tolerance, absolute_tolerance):
                 yield CHANGE, dotted_node, (represent(_first),
                                             represent(_second))
 
@@ -334,9 +337,9 @@ def patch(diff_result, destination, in_place=False):
                      Setting ``in_place=True`` means that patch will apply
                      the changes directly to and return the destination
                      structure.
-                     Note that patching is not atomic - 
-                     an exception in patching while ``in_place=True`` 
-                     can leave the structure in a state where only a part of 
+                     Note that patching is not atomic -
+                     an exception in patching while ``in_place=True``
+                     can leave the structure in a state where only a part of
                      the patch was applied.
     """
     if not in_place:
@@ -354,7 +357,7 @@ def patch(diff_result, destination, in_place=False):
 
     def change(node, changes):
         dest = dot_lookup(destination, node, parent=True)
-        if isinstance(node, string_types):
+        if isinstance(node, str):
             last_node = node.split('.')[-1]
         else:
             last_node = node[-1]

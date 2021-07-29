@@ -16,6 +16,7 @@ import pathlib
 import unittest
 import uuid
 from collections import OrderedDict
+from collections.abc import MutableMapping, MutableSequence
 from types import SimpleNamespace
 
 import pytest
@@ -33,8 +34,6 @@ from dictdiffer import reconstruct
 from dictdiffer import represent
 from dictdiffer import revert
 from dictdiffer import swap
-from dictdiffer._compat import MutableMapping
-from dictdiffer._compat import MutableSequence
 from dictdiffer.utils import PathLimit
 
 
@@ -121,6 +120,54 @@ class DictDifferTests(unittest.TestCase):
 
         diffed = next(diff(first, second, tolerance=0.01))
         assert ('change', 'a', (10.0, 10.5)) == diffed
+
+        first = {'a': 10.0, 'b': 1.0e-15}
+        second = {'a': 10.5, 'b': 2.5e-15}
+        diffed = sorted(diff(
+            first, second, tolerance=0.01
+        ))
+        assert [
+            ('change', 'a', (10.0, 10.5)),
+            ('change', 'b', (1.0e-15, 2.5e-15)),
+        ] == diffed
+
+        diffed = sorted(diff(
+            first, second, tolerance=0.01, absolute_tolerance=1e-12
+        ))
+        assert [('change', 'a', (10.0, 10.5))] == diffed
+
+        diffed = sorted(diff(
+            first, second, tolerance=0.01, absolute_tolerance=1e-18
+        ))
+        assert [
+            ('change', 'a', (10.0, 10.5)),
+            ('change', 'b', (1.0e-15, 2.5e-15)),
+        ] == diffed
+
+        diffed = sorted(diff(
+            first, second, tolerance=0.1, absolute_tolerance=1e-18
+        ))
+        assert [('change', 'b', (1.0e-15, 2.5e-15))] == diffed
+
+        diffed = sorted(diff(
+            first, second, tolerance=0.1, absolute_tolerance=1e-12
+        ))
+        assert [] == diffed
+
+        diffed = sorted(diff(
+            first, second, tolerance=None, absolute_tolerance=None
+        ))
+        assert [
+            ('change', 'a', (10.0, 10.5)),
+            ('change', 'b', (1.0e-15, 2.5e-15)),
+        ] == diffed
+
+        first = {'a': 10.0, 'b': 1.0e-15}
+        second = {'a': 10.0, 'b': 1.0e-15}
+        diffed = sorted(diff(
+            first, second, tolerance=None, absolute_tolerance=None
+        ))
+        assert [] == diffed
 
     def test_path_limit_as_list(self):
         first = {}
@@ -795,6 +842,7 @@ def test_ignore_dotted_ignore_key(ignore, dot_notation, diff_size):
     ref_dict = OrderedDict(
         [('address', 'devops011-slv-01.gvs.ggn'),
             (key_to_ignore, '4 secs')])
+
     assert diff_size == len(
         list(diff(config_dict, ref_dict,
                   dot_notation=dot_notation,

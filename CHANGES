@@ -1,6 +1,14 @@
 Changes
 =======
 
+Version 0.9.0 (released 2021-07-22)
+
+- Adds absolute tolerance feature for floats  (@adrien-berchet) (#152)
+- Drops support of Python<3.5  (@adrien-berchet) (#160)
+- Adds `assert_no_diff` helper to assist pytest users  (@joesolly) (#153)
+- Migrates CI to gh-actions (@ParthS007 @diegodelemos) (#145)
+- Removes dependency on pkg_resources (@eldruin)
+
 Version 0.8.1 (released 2019-12-13)
 
 - Fix invalid diff output for sets. (@jirikuncar @danielduhh)  (#133 #134)
