@@ -8,10 +8,12 @@
 # details.
 
 """Utils gathers helper functions, classes for the dictdiffer module."""
+
+import math
 import sys
+from itertools import zip_longest
 
-from ._compat import izip_longest, num_types, string_types
-
+num_types = int, float
 EPSILON = sys.float_info.epsilon
 
 
@@ -155,7 +157,7 @@ def create_dotted_node(node):
     >>> create_dotted_node( ['foo', 'bar', 'baz'] )
     'foo.bar.baz'
     """
-    if all(map(lambda x: isinstance(x, string_types), node)):
+    if all(map(lambda x: isinstance(x, str), node)):
         return '.'.join(node)
     else:
         return list(node)
@@ -164,7 +166,7 @@ def create_dotted_node(node):
 def get_path(patch):
     """Return the path for a given dictdiffer.diff patch."""
     if patch[1] != '':
-        keys = (patch[1].split('.') if isinstance(patch[1], string_types)
+        keys = (patch[1].split('.') if isinstance(patch[1], str)
                 else patch[1])
     else:
         keys = []
@@ -188,7 +190,7 @@ def is_super_path(path1, path2):
         False
     """
     return all(map(lambda x: x[0] == x[1] or x[0] is None,
-                   izip_longest(path1, path2)))
+                   zip_longest(path1, path2)))
 
 
 def nested_hash(obj):
@@ -234,7 +236,7 @@ def dot_lookup(source, lookup, parent=False):
         return source
 
     value = source
-    if isinstance(lookup, string_types):
+    if isinstance(lookup, str):
         keys = lookup.split('.')
     elif isinstance(lookup, list):
         keys = lookup
@@ -251,7 +253,7 @@ def dot_lookup(source, lookup, parent=False):
     return value
 
 
-def are_different(first, second, tolerance):
+def are_different(first, second, tolerance, absolute_tolerance=None):
     """Check if 2 values are different.
 
     In case of numerical values, the tolerance is used to check if the values
@@ -269,6 +271,11 @@ def are_different(first, second, tolerance):
         return not (first_is_nan and second_is_nan)
     elif isinstance(first, num_types) and isinstance(second, num_types):
         # two numerical values are compared with tolerance
-        return abs(first-second) > tolerance * max(abs(first), abs(second))
+        return not math.isclose(
+            first,
+            second,
+            rel_tol=tolerance or 0,
+            abs_tol=absolute_tolerance or 0,
+        )
     # we got different values
     return True
