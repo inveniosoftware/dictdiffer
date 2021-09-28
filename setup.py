@@ -90,6 +90,7 @@ setup(
     },
     packages=['dictdiffer'],
     zip_safe=False,
+    python_requires='>=3.5',
     extras_require=extras_require,
     setup_requires=setup_requires,
     tests_require=tests_require,
