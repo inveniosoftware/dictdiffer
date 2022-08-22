@@ -47,4 +47,5 @@ Testing
 
 Running the test suite is as simple as: ::
 
+    pip3 install -r requirements-dev.pip
     ./run-tests.sh
