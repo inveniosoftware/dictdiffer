@@ -29,7 +29,7 @@ tests_require = [
     'pytest-pycodestyle>=2.2.0;python_version>"3.5"',
     'pytest-pydocstyle>=2;python_version<="3.5"',
     'pytest-pydocstyle>=2.2.0;python_version>"3.5"',
-    'sphinx>=3',
+    'sphinx>=5',
     'tox>=3.7.0',
 ]
 
