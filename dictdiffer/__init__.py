@@ -209,7 +209,7 @@ def diff(first, second, node=None, ignore=None, path_limit=None, expand=False,
                 # callees again diff function to compare.
                 # otherwise, the change will be handled as `change` flag.
                 if path_limit and path_limit.path_is_limit(_node + [key]):
-                    if deepcopy(_first[key]) == deepcopy(_second[key]):
+                    if _first[key] == _second[key]:
                         return
 
                     yield CHANGE, _node + [key], (
