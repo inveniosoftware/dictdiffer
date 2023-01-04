@@ -8,6 +8,7 @@
 
 import unittest
 
+from dictdiffer import diff, patch
 from dictdiffer.utils import (PathLimit, WildcardDict, create_dotted_node,
                               dot_lookup, get_path, is_super_path, nested_hash)
 
@@ -144,3 +145,46 @@ class UtilsTest(unittest.TestCase):
         nested_hash((1, 2, 3))
         nested_hash(set([1, 2, 3]))
         nested_hash({'foo': 'bar'})
+
+    def test_limit_actions_patch(self):
+        x = {"a": True, "b": {"b1": True, "b2": False}, "c": {"c1": True}}
+        y = {"a": False, "b": {"b1": True}, "c": {"c1": False, "c2": False}}
+        z_a = {
+            "a": True,
+            "b": {"b1": True, "b2": False},
+            "c": {"c1": True, "c2": False},
+        }  # add only
+        z_r = {"a": True, "b": {"b1": True}, "c": {"c1": True}}  # remove only
+        z_c = {
+            "a": False,
+            "b": {"b1": True, "b2": False},
+            "c": {"c1": False},
+        }  # change only
+        z_ar = {
+            "a": True,
+            "b": {"b1": True},
+            "c": {"c1": True, "c2": False},
+        }  # add and remove
+        z_ac = {
+            "a": False,
+            "b": {"b1": True, "b2": False},
+            "c": {"c1": False, "c2": False},
+        }  # add and change
+        z_rc = {
+            "a": False,
+            "b": {"b1": True},
+            "c": {"c1": False}}  # remove and change
+        z_arc = y  # all actions. Default
+        test_dict = {
+            "a": z_a,
+            "r": z_r,
+            "c": z_c,
+            "ar": z_ar,
+            "ac": z_ac,
+            "rc": z_rc,
+            "arc": z_arc,
+        }
+        for k in test_dict:
+            result = diff(x, y)
+            patched = patch(result, x, action_flags=k)
+            self.assertEqual(patched, test_dict[k])

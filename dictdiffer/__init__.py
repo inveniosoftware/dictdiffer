@@ -275,7 +275,7 @@ def diff(first, second, node=None, ignore=None, path_limit=None, expand=False,
     return _diff_recursive(first, second, node)
 
 
-def patch(diff_result, destination, in_place=False):
+def patch(diff_result, destination, in_place=False, action_flags="arc"):
     """Patch the diff result to the destination dictionary.
 
     :param diff_result: Changes returned by ``diff``.
@@ -325,7 +325,8 @@ def patch(diff_result, destination, in_place=False):
     }
 
     for action, node, changes in diff_result:
-        patchers[action](node, changes)
+        if action[0] in action_flags:
+            patchers[action](node, changes)
 
     return destination
 
