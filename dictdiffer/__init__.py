@@ -285,6 +285,10 @@ def patch(diff_result, destination, in_place=False, action_flags="arc"):
                      Setting ``in_place=True`` means that patch will apply
                      the changes directly to and return the destination
                      structure.
+    :param action_flags: By default ('arc'), apply all actions: "add", "remove",
+                     "change". Setting ``actions_flag='a'`` means that
+                     pactch will apply only "add" items in the ``diff_result
+                     ``. Similarly, 'ac' only apply "add" and "change".
     """
     if not in_place:
         destination = deepcopy(destination)
