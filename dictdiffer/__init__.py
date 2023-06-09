@@ -363,7 +363,7 @@ def swap(diff_result):
         return REMOVE, node, list(reversed(changes))
 
     def remove(node, changes):
-        return ADD, node, changes
+        return ADD, node, list(reversed(changes))
 
     def change(node, changes):
         first, second = changes
