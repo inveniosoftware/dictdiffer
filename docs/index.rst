@@ -76,6 +76,13 @@ Now we can apply the diff result with :func:`.patch` method:
 
     assert patched == second
 
+use `action_flags` parameter to select desired actions:
+'a' for 'add','r' for 'remove', 'c' for 'change' or any other
+combinations.
+
+.. code-block:: python
+
+    patched = patch(result, first, action_flags='a')
 
 Also we can swap the diff result with :func:`.swap` method:
 

@@ -284,7 +284,7 @@ def diff(first, second, node=None, ignore=None, path_limit=None, expand=False,
     return _diff_recursive(first, second, node)
 
 
-def patch(diff_result, destination, in_place=False):
+def patch(diff_result, destination, in_place=False, action_flags="arc"):
     """Patch the diff result to the destination dictionary.
 
     :param diff_result: Changes returned by ``diff``.
@@ -294,6 +294,10 @@ def patch(diff_result, destination, in_place=False):
                      Setting ``in_place=True`` means that patch will apply
                      the changes directly to and return the destination
                      structure.
+    :param action_flags: By default ('arc'), apply all actions: "add", "remove",
+                     "change". Setting ``actions_flag='a'`` means that
+                     pactch will apply only "add" items in the ``diff_result
+                     ``. Similarly, 'ac' only apply "add" and "change".
     """
     if not in_place:
         destination = deepcopy(destination)
@@ -334,7 +338,8 @@ def patch(diff_result, destination, in_place=False):
     }
 
     for action, node, changes in diff_result:
-        patchers[action](node, changes)
+        if action[0] in action_flags:
+            patchers[action](node, changes)
 
     return destination
 
