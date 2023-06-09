@@ -208,6 +208,12 @@ class DictDifferTests(unittest.TestCase):
 
     def test_path_limit_change(self):
         first = {'author': {'last_name': 'Do', 'first_name': 'John'}}
+        second = {'author': {'last_name': 'Do', 'first_name': 'John'}}
+        p = PathLimit([('author',)])
+        diffed = list(diff(first, second, path_limit=p, expand=True))
+        assert [] == diffed
+
+        first = {'author': {'last_name': 'Do', 'first_name': 'John'}}
         second = {'author': {'last_name': 'Doe', 'first_name': 'John'}}
         p = PathLimit([('author',)])
         diffed = list(diff(first, second, path_limit=p, expand=True))

@@ -76,6 +76,10 @@ def diff(first, second, node=None, ignore=None, path_limit=None, expand=False,
     ...           path_limit=PathLimit([('a', 'b')])))
     [('add', '', [('a', {})]), ('add', 'a', [('b', 'c')])]
 
+     >>> from dictdiffer.utils import PathLimit
+    >>> list(diff({'a': {'b': 'c'}}, {'a': {'b': 'c'}}, path_limit=PathLimit([('a',)])))
+    []
+
     The patch can be expanded to small units e.g. when adding multiple values:
 
     >>> list(diff({'fruits': []}, {'fruits': ['apple', 'mango']}))
@@ -97,6 +101,8 @@ def diff(first, second, node=None, ignore=None, path_limit=None, expand=False,
     :param ignore: Set of keys that should not be checked.
     :param path_limit: List of path limit tuples or dictdiffer.utils.Pathlimit
                        object to limit the diff recursion depth.
+                       A diff is still performed beyond the path_limit,
+                       but individual differences will be aggregated up to the path_limit.
     :param expand: Expand the patches.
     :param tolerance: Threshold to consider when comparing two float numbers.
     :param absolute_tolerance: Absolute threshold to consider when comparing
@@ -203,6 +209,9 @@ def diff(first, second, node=None, ignore=None, path_limit=None, expand=False,
                 # callees again diff function to compare.
                 # otherwise, the change will be handled as `change` flag.
                 if path_limit and path_limit.path_is_limit(_node + [key]):
+                    if _first[key] == _second[key]:
+                        return
+
                     yield CHANGE, _node + [key], (
                         deepcopy(_first[key]), deepcopy(_second[key])
                     )
