@@ -249,7 +249,7 @@ def dot_lookup(source, lookup, parent=False):
     for key in keys:
         if isinstance(value, list):
             key = int(key)
-        value = value[key]
+        value = value.__dict__ if key == '__dict__' else value[key]
     return value
 
 

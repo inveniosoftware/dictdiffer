@@ -9,6 +9,12 @@
 # details.
 
 """Dictdiffer is a helper module to diff and patch dictionaries."""
+import datetime
+import decimal
+import enum
+import importlib
+import pathlib
+import uuid
 
 from collections.abc import (Iterable, MutableMapping, MutableSequence,
                              MutableSet)
@@ -20,11 +26,28 @@ from .version import __version__
 (ADD, REMOVE, CHANGE) = (
     'add', 'remove', 'change')
 
-__all__ = ('diff', 'patch', 'swap', 'revert', 'dot_lookup', '__version__')
+__all__ = ('diff', 'patch', 'swap', 'revert', 'dot_lookup', 'add_transform', 'allow_import', '__version__')
 
 DICT_TYPES = (MutableMapping, )
 LIST_TYPES = (MutableSequence, )
 SET_TYPES = (MutableSet, )
+ALL_TYPES = DICT_TYPES + LIST_TYPES + SET_TYPES
+
+TRANSFORMS = [
+    (datetime.datetime, {'from': lambda value: value.isoformat(), 'to': datetime.datetime.fromisoformat}),
+    (datetime.date, {'from': lambda value: value.isoformat(), 'to': datetime.date.fromisoformat}),
+    (datetime.time, {'from': lambda value: value.isoformat(), 'to': datetime.time.fromisoformat}),
+    (datetime.timedelta, {
+        'from': lambda value: value.total_seconds(),
+        'to': lambda value: datetime.timedelta(seconds=value)
+    }),
+    (decimal.Decimal, {'from': str, 'to': decimal.Decimal}),
+    (enum.Enum, {'from': lambda value: value.value, 'to': lambda value: value}),
+    (pathlib.Path, {'from': str, 'to': pathlib.Path}),
+    (uuid.UUID, {'from': str, 'to': uuid.UUID}),
+]
+VALUE_KEY = '_dictdiffer_value_key'
+ALLOW_IMPORT = ['types', 'dataclasses']
 
 try:
     import numpy
@@ -58,7 +81,7 @@ def diff(first, second, node=None, ignore=None, path_limit=None, expand=False,
     >>> list(diff({'a': 1, 'b': 2}, {'A': 3, 'b': 4}, ignore=IgnoreCase('a')))
     [('change', 'b', (2, 4))]
 
-    The difference calculation can be limitted to certain path:
+    The difference calculation can be limited to certain path:
 
     >>> list(diff({}, {'a': {'b': 'c'}}))
     [('add', '', [('a', {'b': 'c'})])]
@@ -95,6 +118,12 @@ def diff(first, second, node=None, ignore=None, path_limit=None, expand=False,
     ... dot_notation=False))
     [('change', ['a', 'x'], (1, 2))]
 
+    Diffing treats objects with ``__dict__`` as ``dict``s:
+
+    >>> from types import SimpleNamespace as obj
+    >>> list(diff(obj(a=1), obj(a=2)))
+    [('change', ['__dict__', 'a'], (1, 2))]
+
     :param first: The original dictionary, ``list`` or ``set``.
     :param second: New dictionary, ``list`` or ``set``.
     :param node: Key for comparison that can be used in :func:`dot_lookup`.
@@ -108,6 +137,22 @@ def diff(first, second, node=None, ignore=None, path_limit=None, expand=False,
     :param absolute_tolerance: Absolute threshold to consider when comparing
                                two float numbers.
     :param dot_notation: Boolean to toggle dot notation on and off.
+
+    In general:
+
+    - `diff` is a generator that yields zero or more tuples of the format
+    `(op, path, values)`, where
+    - `op` is one of the strings 'add', 'change' or 'remove'
+    - `path` is by default a dot-separated string of keys from the root of the
+    structure to the point of difference.
+        - If parameter `dot_notation` is set to False, path is a list of
+        separate key strings instead.
+    - `values` are one or more tuples containing:
+        - Key/value pairs for 'add' and 'remove'; keys for lists are indexes
+        - Previous/new values for 'change', key being a part of the path in this case
+        - Several value tuples sharing the same op and path are wrapped in a
+        list, unless you specify `expand=True`, in which case they all
+        get a separate (op, path, values) tuple.
 
     .. versionchanged:: 0.3
        Added *ignore* parameter.
@@ -153,6 +198,14 @@ def diff(first, second, node=None, ignore=None, path_limit=None, expand=False,
 
     def _diff_recursive(_first, _second, _node=None):
         _node = _node or []
+
+        if (
+            not isinstance(_first, ALL_TYPES) and hasattr(_first, '__dict__') and
+            not isinstance(_second, ALL_TYPES) and hasattr(_second, '__dict__')
+        ):
+            _first = _first.__dict__
+            _second = _second.__dict__
+            _node = _node + ['__dict__']
 
         dotted_node = dotted(_node)
 
@@ -206,14 +259,14 @@ def diff(first, second, node=None, ignore=None, path_limit=None, expand=False,
             # child objects.  Yields `add` and `remove` flags.
             for key in intersection:
                 # if type is not changed,
-                # callees again diff function to compare.
+                # calls again diff function to compare.
                 # otherwise, the change will be handled as `change` flag.
                 if path_limit and path_limit.path_is_limit(_node + [key]):
                     if _first[key] == _second[key]:
                         return
 
                     yield CHANGE, _node + [key], (
-                        deepcopy(_first[key]), deepcopy(_second[key])
+                        represent(_first[key]), represent(_second[key])
                     )
                 else:
                     recurred = _diff_recursive(
@@ -229,11 +282,10 @@ def diff(first, second, node=None, ignore=None, path_limit=None, expand=False,
                     collect = []
                     collect_recurred = []
                     for key in addition:
-                        if not isinstance(_second[key],
-                                          SET_TYPES + LIST_TYPES + DICT_TYPES):
-                            collect.append((key, deepcopy(_second[key])))
+                        if not isinstance(_second[key], ALL_TYPES):
+                            collect.append((key, represent(_second[key])))
                         elif path_limit.path_is_limit(_node + [key]):
-                            collect.append((key, deepcopy(_second[key])))
+                            collect.append((key, represent(_second[key])))
                         else:
                             collect.append((key, _second[key].__class__()))
                             recurred = _diff_recursive(
@@ -257,29 +309,29 @@ def diff(first, second, node=None, ignore=None, path_limit=None, expand=False,
                     if expand:
                         for key in addition:
                             yield ADD, dotted_node, [
-                                (key, deepcopy(_second[key]))]
+                                (key, represent(_second[key]))]
                     else:
                         yield ADD, dotted_node, [
                             # for additions, return a list that consist with
                             # two-pair tuples.
-                            (key, deepcopy(_second[key])) for key in addition]
+                            (key, represent(_second[key])) for key in addition]
 
             if deletion:
                 if expand:
                     for key in deletion:
                         yield REMOVE, dotted_node, [
-                            (key, deepcopy(_first[key]))]
+                            (key, represent(_first[key]))]
                 else:
                     yield REMOVE, dotted_node, [
                         # for deletions, return the list of removed keys
                         # and values.
-                        (key, deepcopy(_first[key])) for key in deletion]
+                        (key, represent(_first[key])) for key in deletion]
 
         else:
             # Compare string and numerical types and yield `change` flag.
             if are_different(_first, _second, tolerance, absolute_tolerance):
-                yield CHANGE, dotted_node, (deepcopy(_first),
-                                            deepcopy(_second))
+                yield CHANGE, dotted_node, (represent(_first),
+                                            represent(_second))
 
     return _diff_recursive(first, second, node)
 
@@ -294,6 +346,10 @@ def patch(diff_result, destination, in_place=False):
                      Setting ``in_place=True`` means that patch will apply
                      the changes directly to and return the destination
                      structure.
+                     Note that patching is not atomic -
+                     an exception in patching while ``in_place=True``
+                     can leave the structure in a state where only a part of
+                     the patch was applied.
     """
     if not in_place:
         destination = deepcopy(destination)
@@ -306,7 +362,7 @@ def patch(diff_result, destination, in_place=False):
             elif isinstance(dest, SET_TYPES):
                 dest |= value
             else:
-                dest[key] = value
+                dest[key] = reconstruct(value)
 
     def change(node, changes):
         dest = dot_lookup(destination, node, parent=True)
@@ -317,7 +373,7 @@ def patch(diff_result, destination, in_place=False):
         if isinstance(dest, LIST_TYPES):
             last_node = int(last_node)
         _, value = changes
-        dest[last_node] = value
+        dest[last_node] = reconstruct(value)
 
     def remove(node, changes):
         for key, value in changes:
@@ -399,3 +455,79 @@ def revert(diff_result, destination, in_place=False):
                      and return the destination structure.
     """
     return patch(swap(diff_result), destination, in_place)
+
+
+def represent(value):
+    """
+    Return object values such as decimal.Decimal or objects with a __dict__ member in a format that can be
+    reconstructed in patching.
+
+    >>> import decimal
+    >>> represent(decimal.Decimal("1.23"))
+    {'_dictdiffer_value_key': {'type': 'decimal.Decimal', 'value': '1.23'}}
+    >>> import datetime
+    >>> represent(datetime.date(2021, 7, 6))
+    {'_dictdiffer_value_key': {'type': 'datetime.date', 'value': '2021-07-06'}}
+    """
+    transformed_value = False
+    for cls, transform in TRANSFORMS:
+        if issubclass(type(value), cls):
+            transformed_value = transform['from'](value)
+            represent_type = cls
+            break
+    else:
+        represent_type = type(value)
+        if represent_type.__module__ in ALLOW_IMPORT and hasattr(value, '__dict__'):
+            transformed_value = value.__dict__
+
+    if transformed_value:
+        value = {'_dictdiffer_value_key': {
+            'module': represent_type.__module__,
+            'name': represent_type.__name__,
+            'value': transformed_value
+        }}
+
+    return deepcopy(value)
+
+
+def reconstruct(value):
+    if type(value) is dict:
+        value_spec = value.get('_dictdiffer_value_key')
+        if value_spec:
+            module_name = value_spec['module']
+            class_name = value_spec['name']
+            spec_value = value_spec['value']
+
+            # Enums cannot be reconstructed, we just use the value
+            if module_name == 'enum' and class_name == 'Enum':
+                return spec_value
+
+            # Try to match with defined basic types like dates, decimals
+            for cls, transform in TRANSFORMS:
+                if cls.__module__ == module_name and cls.__name__ == class_name:
+                    value = transform['to'](spec_value)
+                    break
+
+            # Check if we can re-instantiate a class from an allowed module like types
+            else:
+                if module_name in ALLOW_IMPORT:
+                    module = importlib.import_module(module_name)
+                    cls = getattr(module, class_name)
+                    value = cls(**spec_value)
+                else:
+                    raise ValueError(f'Could not reconstruct value {value}')
+    return value
+
+
+def add_transform(value_sample, represent, reconstruct):
+    TRANSFORMS.append((type(value_sample), {'from': represent, 'to': reconstruct}))
+    assert reconstruct(represent(value_sample)) == value_sample, (
+        f'Could not reconstruct ({type(represent(value_sample)).__name__}) {represent(value_sample)} '
+        f'to ({type(value_sample).__name__}) {value_sample}'
+    )
+
+
+def allow_import(*module_names):
+    for module in module_names:
+        importlib.import_module(module)
+    ALLOW_IMPORT.extend(module_names)
