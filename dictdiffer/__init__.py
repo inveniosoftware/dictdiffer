@@ -76,8 +76,9 @@ def diff(first, second, node=None, ignore=None, path_limit=None, expand=False,
     ...           path_limit=PathLimit([('a', 'b')])))
     [('add', '', [('a', {})]), ('add', 'a', [('b', 'c')])]
 
-     >>> from dictdiffer.utils import PathLimit
-    >>> list(diff({'a': {'b': 'c'}}, {'a': {'b': 'c'}}, path_limit=PathLimit([('a',)])))
+    >>> from dictdiffer.utils import PathLimit
+    >>> list(diff({'a': {'b': 'c'}}, {'a': {'b': 'c'}},
+    ...           path_limit=PathLimit([('a',)])))
     []
 
     The patch can be expanded to small units e.g. when adding multiple values:
@@ -100,9 +101,9 @@ def diff(first, second, node=None, ignore=None, path_limit=None, expand=False,
     :param node: Key for comparison that can be used in :func:`dot_lookup`.
     :param ignore: Set of keys that should not be checked.
     :param path_limit: List of path limit tuples or dictdiffer.utils.Pathlimit
-                       object to limit the diff recursion depth.
-                       A diff is still performed beyond the path_limit,
-                       but individual differences will be aggregated up to the path_limit.
+            object to limit the diff recursion depth.
+            A diff is still performed beyond the path_limit,
+            but individual differences will be aggregated up to the path_limit.
     :param expand: Expand the patches.
     :param tolerance: Threshold to consider when comparing two float numbers.
     :param absolute_tolerance: Absolute threshold to consider when comparing
