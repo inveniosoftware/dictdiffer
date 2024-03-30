@@ -5,6 +5,7 @@
 # Copyright (C) 2013 Fatih Erikli.
 # Copyright (C) 2013, 2014, 2015, 2016 CERN.
 # Copyright (C) 2017-2019 ETH Zurich, Swiss Data Science Center, Jiri Kuncar.
+# Copyright (C) 2024 Kohl's.
 #
 # Dictdiffer is free software; you can redistribute it and/or modify
 # it under the terms of the MIT License; see LICENSE file for more
@@ -13,6 +14,8 @@
 import unittest
 from collections import OrderedDict
 from collections.abc import MutableMapping, MutableSequence
+from decimal import Decimal
+from fractions import Fraction
 
 import pytest
 
@@ -151,6 +154,91 @@ class DictDifferTests(unittest.TestCase):
             first, second, tolerance=None, absolute_tolerance=None
         ))
         assert [] == diffed
+
+        first = {'a': 22570409781991170591038650551}
+        second = {'a': 22570409781991170591038650552}
+        diffed = list(diff(first, second, tolerance=None))
+        assert [
+            (
+                'change',
+                'a',
+                (22570409781991170591038650551, 22570409781991170591038650552)
+            )
+        ] == diffed
+
+        diffed = list(diff(first, second, tolerance=0))
+        assert [
+            (
+                'change',
+                'a',
+                (22570409781991170591038650551, 22570409781991170591038650552)
+            )
+        ] == diffed
+
+        diffed = list(diff(first, second, tolerance=1e-9))
+        assert [
+            (
+                'change',
+                'a',
+                (22570409781991170591038650551, 22570409781991170591038650552)
+            )
+        ] == diffed
+
+        first = {'a': Decimal("1.0e-15")}
+        second = {'a': Decimal("2.5e-15")}
+        diffed = list(diff(first, second, tolerance=1e-20))
+        assert [
+            ('change', 'a', (Decimal("1.0e-15"), Decimal("2.5e-15")))
+        ] == diffed
+
+        first = {'a': complex(1.0e-15, 1.0e-15)}
+        second = {'a': complex(2.5e-15, 2.5e-15)}
+        diffed = list(
+            diff(first, second, tolerance=1e-3, absolute_tolerance=1e-3)
+        )
+        assert [
+            (
+                'change',
+                'a',
+                (complex(1.0e-15, 1.0e-15), complex(2.5e-15, 2.5e-15))
+            )
+        ] == diffed
+
+        first = {'a': Fraction(10, 7)}
+        second = {'a': Fraction(11, 7)}
+        diffed = list(
+            diff(first, second, tolerance=1e-3, absolute_tolerance=1e-3)
+        )
+        assert [
+            ('change', 'a', (Fraction(10, 7), Fraction(11, 7)))
+        ] == diffed
+
+        first = {'a': 2 - 1e-15}
+        second = {'a': complex(2, 0)}
+        diffed = list(
+            diff(first, second, tolerance=1e-3, absolute_tolerance=1e-3)
+        )
+        assert [
+            ('change', 'a', (2 - 1e-15, complex(2, 0)))
+        ] == diffed
+
+        first = {'a': 2 - 1e-15}
+        second = {'a': 2}
+        diffed = list(
+            diff(first, second, tolerance=1e-3, absolute_tolerance=1e-3)
+        )
+        assert [
+            ('change', 'a', (2 - 1e-15, 2))
+        ] == diffed
+
+        first = {'a': 2 - 1e-15}
+        second = {'a': Decimal("2.0")}
+        diffed = list(
+            diff(first, second, tolerance=1e-3, absolute_tolerance=1e-3)
+        )
+        assert [
+            ('change', 'a', (2 - 1e-15, Decimal("2.0")))
+        ] == diffed
 
     def test_path_limit_as_list(self):
         first = {}

@@ -13,7 +13,6 @@ import math
 import sys
 from itertools import zip_longest
 
-num_types = int, float
 EPSILON = sys.float_info.epsilon
 
 
@@ -256,8 +255,8 @@ def dot_lookup(source, lookup, parent=False):
 def are_different(first, second, tolerance, absolute_tolerance=None):
     """Check if 2 values are different.
 
-    In case of numerical values, the tolerance is used to check if the values
-    are different.
+    In case of 2 floating-point values, the tolerance is used to check if the
+    values are different.
     In all other cases, the difference is straight forward.
     """
     if first == second:
@@ -269,8 +268,8 @@ def are_different(first, second, tolerance, absolute_tolerance=None):
     if first_is_nan or second_is_nan:
         # two 'NaN' values are not different (see issue #114)
         return not (first_is_nan and second_is_nan)
-    elif isinstance(first, num_types) and isinstance(second, num_types):
-        # two numerical values are compared with tolerance
+    elif isinstance(first, float) and isinstance(second, float):
+        # two floating-precision values are compared with tolerance
         return not math.isclose(
             first,
             second,

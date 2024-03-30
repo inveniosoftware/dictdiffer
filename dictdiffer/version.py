@@ -3,4 +3,4 @@
 # setup.py and docs/conf.py
 """Version information for dictdiffer package."""
 
-__version__ = '0.9.0'
+__version__ = '0.1.dev160'
