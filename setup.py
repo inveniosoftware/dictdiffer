@@ -13,6 +13,7 @@
 from __future__ import absolute_import, print_function
 
 import os
+import sys
 
 from setuptools import find_packages, setup
 
@@ -54,9 +55,11 @@ for key, reqs in extras_require.items():
     extras_require['all'].extend(reqs)
 
 setup_requires = [
-    'pytest-runner>=2.7',
     'setuptools_scm>=3.1.0',
 ]
+needs_pytest = {'pytest', 'test', 'ptr'}.intersection(sys.argv)
+if needs_pytest:
+    setup_requires.append('pytest-runner>=2.7')
 
 packages = find_packages()
 
