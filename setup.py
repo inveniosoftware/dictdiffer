@@ -55,7 +55,7 @@ with open(os.path.join('dictdiffer', 'version.py'), 'rt') as f:
     ).group('version')
 
 setup(
-    name='dictdiffer',
+    name='inspire-dictdiffer',
     version=version,
     description=__doc__,
     long_description=readme + '\n\n' + history,
