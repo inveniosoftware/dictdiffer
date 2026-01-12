@@ -54,7 +54,6 @@ for key, reqs in extras_require.items():
     extras_require['all'].extend(reqs)
 
 setup_requires = [
-    'pytest-runner>=2.7',
     'setuptools_scm>=3.1.0',
 ]
 
@@ -93,7 +92,6 @@ setup(
     python_requires='>=3.5',
     extras_require=extras_require,
     setup_requires=setup_requires,
-    tests_require=tests_require,
     classifiers=[
         'Programming Language :: Python :: 3',
         'Programming Language :: Python :: 3.5',
