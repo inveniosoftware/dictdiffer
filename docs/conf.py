@@ -24,9 +24,9 @@
 
 from __future__ import print_function
 
+import ast
+import os
 import sys
-
-from pkg_resources import get_distribution
 
 _html_theme = "sphinx_rtd_theme"
 _html_theme_path = []
@@ -36,6 +36,23 @@ try:
 except ImportError:
     print("Template {0} not found, pip install it", file=sys.stderr)
     _html_theme = "default"
+
+
+def _read_version():
+    """Read the generated package version without packaging helpers."""
+    version_path = os.path.join(
+        os.path.dirname(__file__), '..', 'dictdiffer', 'version.py'
+    )
+    with open(version_path, encoding='utf-8') as version_file:
+        module = ast.parse(version_file.read(), filename=version_path)
+
+    for node in module.body:
+        if isinstance(node, ast.Assign):
+            for target in node.targets:
+                if isinstance(target, ast.Name) and target.id == '__version__':
+                    return ast.literal_eval(node.value)
+
+    raise RuntimeError('Unable to read dictdiffer version')
 
 # If extensions (or modules to document with autodoc) are in another directory,
 # add these directories to sys.path here. If the directory is relative to the
@@ -81,7 +98,7 @@ copyright = u'2014, Fatih Erikli'
 # built documents.
 #
 # The short X.Y version.
-version = get_distribution('dictdiffer').version
+version = _read_version()
 
 # The full version, including alpha/beta/rc tags.
 release = version
