@@ -1,11 +1,6 @@
-# This file is part of Dictdiffer.
-#
-# Copyright (C) 2015 CERN.
-# Copyright (C) 2017, 2019 ETH Zurich, Swiss Data Science Center, Jiri Kuncar.
-#
-# Dictdiffer is free software; you can redistribute it and/or modify
-# it under the terms of the MIT License; see LICENSE file for more
-# details.
+# SPDX-FileCopyrightText: 2015 CERN.
+# SPDX-FileCopyrightText: 2017, 2019 ETH Zurich, Swiss Data Science Center, Jiri Kuncar.
+# SPDX-License-Identifier: MIT
 
 """Utils gathers helper functions, classes for the dictdiffer module."""
 

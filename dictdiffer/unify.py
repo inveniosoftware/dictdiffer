@@ -1,10 +1,5 @@
-# This file is part of Dictdiffer.
-#
-# Copyright (C) 2015 CERN.
-#
-# Dictdiffer is free software; you can redistribute it and/or modify
-# it under the terms of the MIT License; see LICENSE file for more
-# details.
+# SPDX-FileCopyrightText: 2015 CERN.
+# SPDX-License-Identifier: MIT
 
 """Sub module to handle the unification of patches after the merge."""
 
