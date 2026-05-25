@@ -66,6 +66,46 @@ dictionaries using :func:`.diff` method:
         ('add', 'stargazers', [(2, '/users/40')]),
         ('change', 'title', ('hello', 'hellooo'))]
 
+The :func:`.diff` method can ignore fields by passing any container to the
+``ignore`` argument.  This allows custom path matching, for example ignoring a
+field in every object of nested arrays regardless of the array index:
+
+.. code-block:: python
+
+    class IgnorePath:
+        def __init__(self, *path):
+            self.path = path
+
+        def __contains__(self, path):
+            if not isinstance(path, tuple):
+                path = tuple(path.split("."))
+            return len(path) == len(self.path) and all(
+                expected is None or expected == actual
+                for expected, actual in zip(self.path, path)
+            )
+
+    first = {
+        "races": [{
+            "reportingUnits": [{
+                "apiAccessTime": "2018-06-04T12:00:00Z",
+                "name": "North",
+            }],
+        }],
+    }
+    second = {
+        "races": [{
+            "reportingUnits": [{
+                "apiAccessTime": "2018-06-04T12:05:00Z",
+                "name": "North",
+            }],
+        }],
+    }
+
+    ignore = IgnorePath(
+        "races", None, "reportingUnits", None, "apiAccessTime")
+
+    assert list(diff(first, second, ignore=ignore)) == []
+
 
 Now we can apply the diff result with :func:`.patch` method:
 
