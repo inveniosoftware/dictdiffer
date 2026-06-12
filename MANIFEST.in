@@ -1,6 +1,7 @@
 # SPDX-FileCopyrightText: 2014, 2016 CERN.
 # SPDX-License-Identifier: MIT
 
+exclude .git-blame-ignore-revs
 include README.rst CHANGES CONTRIBUTING.rst AUTHORS LICENSE MANIFEST.in
 include RELEASE-NOTES.rst
 include .coveragerc pytest.ini
