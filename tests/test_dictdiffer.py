@@ -712,6 +712,19 @@ class SwapperTests(unittest.TestCase):
         reverted = revert(diffed, second)
         assert reverted == first
 
+    def test_revert_list_with_three_or_more_removed_elements(self):
+        # revert must restore list order when 3+ elements are removed: swap's
+        # remove handler has to reverse its changes like the add handler, since
+        # diff emits removals in descending index order but revert replays them
+        # as inserts (which need ascending order).
+        first = {'a': ['p', 'q', 'r']}
+        second = {'a': []}
+        assert revert(diff(first, second), second) == first
+
+        first = {'a': list('abcdef')}
+        second = {'a': ['a', 'd']}
+        assert revert(diff(first, second), second) == first
+
     def test_list_of_different_length(self):
         """Check that one can revert list with different length."""
         first = [1]
