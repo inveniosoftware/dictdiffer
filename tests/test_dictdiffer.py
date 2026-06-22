@@ -385,6 +385,24 @@ class DictDifferTests(unittest.TestCase):
         diffed = next(diff(second, first, ignore=[['a', 1, 'b']]))
         assert ('change', ['a', 1, 'a'], (1, 'a')) == diffed
 
+    def test_ignore_nested_key_in_object_values(self):
+        first = {'a': 'a', 'b': {'bb': 'bb', 'cc': 'cc'}}
+        second = {'a': 'A', 'b': None}
+
+        diffed = list(diff(first, second, ignore={'b.bb'}))
+        assert diffed == [
+            ('change', 'a', ('a', 'A')),
+            ('change', 'b', ({'cc': 'cc'}, None)),
+        ]
+
+        diffed = list(diff({}, {'b': {'bb': 'BB', 'cc': 'cc'}},
+                           ignore={'b.bb'}))
+        assert diffed == [('add', '', [('b', {'cc': 'cc'})])]
+
+        diffed = list(diff({'b': {'bb': 'bb', 'cc': 'cc'}}, {},
+                           ignore={'b.bb'}))
+        assert diffed == [('remove', '', [('b', {'cc': 'cc'})])]
+
     def test_ignore_stringofintegers_keys(self):
         a = {'1': '1', '2': '2', '3': '3'}
         b = {'1': '1', '2': '2', '3': '99', '4': '100'}

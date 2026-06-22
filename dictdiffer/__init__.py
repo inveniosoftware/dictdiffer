@@ -146,6 +146,29 @@ def diff(first, second, node=None, ignore=None, path_limit=None, expand=False,
         else:
             return default_type(node)
 
+    def _path_is_ignored(path):
+        return ignore is not None and (
+            dotted(path, default_type=tuple) in ignore or
+            tuple(path) in ignore
+        )
+
+    def _filtered_deepcopy(value, _node):
+        value = deepcopy(value)
+        if ignore is None:
+            return value
+
+        def prune_ignored_keys(_value, _path):
+            if isinstance(_value, DICT_TYPES):
+                for key in list(_value):
+                    path = _path + [key]
+                    if _path_is_ignored(path):
+                        del _value[key]
+                    else:
+                        prune_ignored_keys(_value[key], path)
+
+        prune_ignored_keys(value, _node)
+        return value
+
     def _diff_recursive(_first, _second, _node=None):
         _node = _node or []
 
@@ -157,10 +180,7 @@ def diff(first, second, node=None, ignore=None, path_limit=None, expand=False,
             # dictionaries are not hashable, we can't use sets
             def check(key):
                 """Test if key in current node should be ignored."""
-                return ignore is None or (
-                    dotted(_node + [key], default_type=tuple) not in ignore and
-                    tuple(_node + [key]) not in ignore
-                )
+                return not _path_is_ignored(_node + [key])
 
             intersection = [k for k in _first if k in _second and check(k)]
             addition = [k for k in _second if k not in _first and check(k)]
@@ -208,7 +228,8 @@ def diff(first, second, node=None, ignore=None, path_limit=None, expand=False,
                         return
 
                     yield CHANGE, _node + [key], (
-                        deepcopy(_first[key]), deepcopy(_second[key])
+                        _filtered_deepcopy(_first[key], _node + [key]),
+                        _filtered_deepcopy(_second[key], _node + [key])
                     )
                 else:
                     recurred = _diff_recursive(
@@ -226,9 +247,17 @@ def diff(first, second, node=None, ignore=None, path_limit=None, expand=False,
                     for key in addition:
                         if not isinstance(_second[key],
                                           SET_TYPES + LIST_TYPES + DICT_TYPES):
-                            collect.append((key, deepcopy(_second[key])))
+                            collect.append((
+                                key,
+                                _filtered_deepcopy(_second[key],
+                                                   _node + [key]),
+                            ))
                         elif path_limit.path_is_limit(_node + [key]):
-                            collect.append((key, deepcopy(_second[key])))
+                            collect.append((
+                                key,
+                                _filtered_deepcopy(_second[key],
+                                                   _node + [key]),
+                            ))
                         else:
                             collect.append((key, _second[key].__class__()))
                             recurred = _diff_recursive(
@@ -252,29 +281,37 @@ def diff(first, second, node=None, ignore=None, path_limit=None, expand=False,
                     if expand:
                         for key in addition:
                             yield ADD, dotted_node, [
-                                (key, deepcopy(_second[key]))]
+                                (key, _filtered_deepcopy(_second[key],
+                                                         _node + [key]))]
                     else:
                         yield ADD, dotted_node, [
                             # for additions, return a list that consist with
                             # two-pair tuples.
-                            (key, deepcopy(_second[key])) for key in addition]
+                            (key, _filtered_deepcopy(_second[key],
+                                                     _node + [key]))
+                            for key in addition]
 
             if deletion:
                 if expand:
                     for key in deletion:
                         yield REMOVE, dotted_node, [
-                            (key, deepcopy(_first[key]))]
+                            (key, _filtered_deepcopy(_first[key],
+                                                     _node + [key]))]
                 else:
                     yield REMOVE, dotted_node, [
                         # for deletions, return the list of removed keys
                         # and values.
-                        (key, deepcopy(_first[key])) for key in deletion]
+                        (key, _filtered_deepcopy(_first[key],
+                                                 _node + [key]))
+                        for key in deletion]
 
         else:
             # Compare string and numerical types and yield `change` flag.
             if are_different(_first, _second, tolerance, absolute_tolerance):
-                yield CHANGE, dotted_node, (deepcopy(_first),
-                                            deepcopy(_second))
+                yield CHANGE, dotted_node, (
+                    _filtered_deepcopy(_first, _node),
+                    _filtered_deepcopy(_second, _node),
+                )
 
     return _diff_recursive(first, second, node)
 
