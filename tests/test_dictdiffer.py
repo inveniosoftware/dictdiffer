@@ -188,6 +188,19 @@ class DictDifferTests(unittest.TestCase):
         for patch in res:
             assert patch in diffed
 
+        first = {'input': {}, 'output': {}, 'forward': {'WWW': {'port': 80}}}
+        second = {
+            'input': {},
+            'output': {},
+            'forward': {'WWW': {'port': 80}, 'FTP': {'port': 21}},
+        }
+        diffed = list(diff(
+            first, second, path_limit=[('*', '*')], dot_notation=False
+        ))
+
+        res = [('add', ['forward'], [('FTP', {'port': 21})])]
+        assert res == diffed
+
     def test_path_limit_deletion(self):
         first = {'author': {'last_name': 'Doe', 'first_name': 'John'}}
         second = {}
