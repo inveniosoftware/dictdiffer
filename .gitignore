@@ -16,3 +16,4 @@ docs/_build
 docs/db
 docs/static
 htmlcov
+uv.lock

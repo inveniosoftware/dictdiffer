@@ -3,8 +3,15 @@
 
 import unittest
 
-from dictdiffer.utils import (PathLimit, WildcardDict, create_dotted_node,
-                              dot_lookup, get_path, is_super_path, nested_hash)
+from dictdiffer.utils import (
+    PathLimit,
+    WildcardDict,
+    create_dotted_node,
+    dot_lookup,
+    get_path,
+    is_super_path,
+    nested_hash,
+)
 
 
 class UtilsTest(unittest.TestCase):

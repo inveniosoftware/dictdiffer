@@ -4,8 +4,11 @@
 import unittest
 
 from dictdiffer.conflict import Conflict
-from dictdiffer.resolve import (NoFurtherResolutionException, Resolver,
-                                UnresolvedConflictsException)
+from dictdiffer.resolve import (
+    NoFurtherResolutionException,
+    Resolver,
+    UnresolvedConflictsException,
+)
 
 
 class UnresolvedConflictsExceptionTest(unittest.TestCase):
