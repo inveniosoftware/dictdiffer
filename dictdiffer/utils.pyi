@@ -25,6 +25,10 @@ from . import _Diff, _DiffPair, _DiffPath, _PathTuple
 _ValueT = TypeVar("_ValueT")
 _SourceT = TypeVar("_SourceT")
 _PathPatch: TypeAlias = Tuple[str, _DiffPath, Sequence[_DiffPair]]
+_PathLimitTree: TypeAlias = Dict[
+    Hashable,
+    Union[bool, "_PathLimitTree"],
+]
 
 num_types: Tuple[Type[int], Type[float]]
 EPSILON: float
@@ -43,7 +47,7 @@ class WildcardDict(Dict[_PathTuple, _ValueT], Generic[_ValueT]):
 
 class PathLimit:
     final_key: Hashable
-    dict: Dict[Hashable, object]
+    dict: _PathLimitTree
     def __init__(
         self,
         path_limits: Iterable[Iterable[Hashable]] = ...,
