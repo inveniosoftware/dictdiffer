@@ -201,9 +201,10 @@ def nested_hash(obj):
         if isinstance(obj, (list, tuple)):
             return hash(tuple(map(nested_hash, obj)))
         elif isinstance(obj, set):
-            return hash(tuple(map(nested_hash, sorted(obj))))
+            return hash(frozenset(obj))
         elif isinstance(obj, dict):
-            return hash(tuple(map(nested_hash, sorted(obj.items()))))
+            return hash(frozenset((key, nested_hash(value))
+                                  for key, value in obj.items()))
 
 
 def dot_lookup(source, lookup, parent=False):

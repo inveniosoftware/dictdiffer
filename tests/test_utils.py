@@ -146,3 +146,14 @@ class UtilsTest(unittest.TestCase):
         nested_hash((1, 2, 3))
         nested_hash(set([1, 2, 3]))
         nested_hash({'foo': 'bar'})
+
+
+    def test_nested_hash_mixed_set(self):
+        first = {1, 'one', (2, 3)}
+        second = {(2, 3), 'one', 1}
+        self.assertEqual(nested_hash(first), nested_hash(second))
+
+    def test_nested_hash_mixed_dict_keys(self):
+        first = {1: ['one'], 'two': {3, 'three'}}
+        second = {'two': {'three', 3}, 1: ['one']}
+        self.assertEqual(nested_hash(first), nested_hash(second))
