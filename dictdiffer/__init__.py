@@ -294,6 +294,7 @@ def patch(diff_result, destination, in_place=False):
 
     def add(node, changes):
         for key, value in changes:
+            value = deepcopy(value)
             dest = dot_lookup(destination, node)
             if isinstance(dest, LIST_TYPES):
                 dest.insert(key, value)
@@ -311,7 +312,7 @@ def patch(diff_result, destination, in_place=False):
         if isinstance(dest, LIST_TYPES):
             last_node = int(last_node)
         _, value = changes
-        dest[last_node] = value
+        dest[last_node] = deepcopy(value)
 
     def remove(node, changes):
         for key, value in changes:
