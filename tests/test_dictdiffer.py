@@ -753,5 +753,18 @@ def test_ignore_dotted_ignore_key(ignore, dot_notation, diff_size):
                   ignore=[ignore])))
 
 
+@pytest.mark.parametrize('first', [{}, {'value': None}])
+@pytest.mark.parametrize('in_place', [False, True])
+def test_patch_does_not_alias_diff_values(first, in_place):
+    first = dict(first)
+    second = {'value': {'items': [1]}}
+    changes = list(diff(first, second))
+    original_changes = list(diff(first, second))
+    result = patch(changes, first, in_place=in_place)
+    result['value']['items'].append(2)
+    assert changes == original_changes
+    assert patch(changes, {})['value'] == {'items': [1]}
+
+
 if __name__ == "__main__":
     unittest.main()
