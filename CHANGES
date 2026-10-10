@@ -1,6 +1,11 @@
 Changes
 =======
 
+Unreleased
+
+- patch: support complete root replacements and distinguish empty dictionary
+  keys from the root path.
+
 Version v0.10.0 (released 2026-07-16)
 
 - chore(setup): migrate from setuptools to hatchling

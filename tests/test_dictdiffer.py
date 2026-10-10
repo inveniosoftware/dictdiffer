@@ -6,11 +6,57 @@
 import unittest
 from collections import OrderedDict
 from collections.abc import MutableMapping, MutableSequence
+from copy import deepcopy
 
 import pytest
 
 from dictdiffer import HAS_NUMPY, diff, dot_lookup, patch, revert, swap
 from dictdiffer.utils import PathLimit
+
+
+@pytest.mark.parametrize('dot_notation', [True, False])
+@pytest.mark.parametrize('in_place', [True, False])
+@pytest.mark.parametrize('first,second', [
+    ({'value': 1}, [2, 3]),
+    ([1, 2], {'value': 3}),
+    ({1, 2}, [3, 4]),
+    ([1, 2], {3, 4}),
+    ({'value': 1}, None),
+    (None, {'value': 2}),
+])
+def test_patch_root_replacement(first, second, dot_notation, in_place):
+    """Patch and revert changes that replace the complete root value."""
+    first = deepcopy(first)
+    second = deepcopy(second)
+    original = deepcopy(first)
+    changes = list(diff(first, second, dot_notation=dot_notation))
+    patched = patch(changes, first, in_place=in_place)
+    assert patched == second
+    assert first == original
+    assert revert(changes, patched, in_place=in_place) == first
+
+
+@pytest.mark.parametrize('dot_notation', [True, False])
+@pytest.mark.parametrize('first,second', [
+    ({'': 1}, {'': 2}),
+    ({'': []}, {'': [1, 2]}),
+    ({'': [1, 2]}, {'': []}),
+    ({'': {'': 1}}, {'': {'': 2}}),
+])
+def test_patch_empty_key(first, second, dot_notation):
+    """An empty dictionary key remains distinct from the root path."""
+    changes = list(diff(first, second, dot_notation=dot_notation))
+    patched = patch(changes, first)
+    assert patched == second
+    assert revert(changes, patched) == first
+
+
+@pytest.mark.parametrize('dot_notation', [True, False])
+@pytest.mark.parametrize('ignore', [{''}, {('',)}, [['']]])
+def test_ignore_empty_key(ignore, dot_notation):
+    """Ignoring an empty dictionary key survives path disambiguation."""
+    assert list(diff({'': 1, 'kept': 2}, {'': 3, 'kept': 2},
+                     ignore=ignore, dot_notation=dot_notation)) == []
 
 
 class DictDifferTests(unittest.TestCase):

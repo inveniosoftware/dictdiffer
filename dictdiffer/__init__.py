@@ -130,7 +130,7 @@ def diff(first, second, node=None, ignore=None, path_limit=None, expand=False,
                 return value,
             elif isinstance(value, list):
                 return tuple(value)
-            elif not dot_notation and isinstance(value, str):
+            elif isinstance(value, str) and (not dot_notation or not value):
                 return value,
             return value
 
@@ -138,7 +138,7 @@ def diff(first, second, node=None, ignore=None, path_limit=None, expand=False,
 
     def dotted(node, default_type=list):
         """Return dotted notation."""
-        if dot_notation and \
+        if dot_notation and node != [''] and \
             all(map(lambda x: isinstance(x, str) and '.' not in x,
                 node)):
             return '.'.join(node)
@@ -287,7 +287,8 @@ def patch(diff_result, destination, in_place=False):
                      before applying the patch, and the copy is returned.
                      Setting ``in_place=True`` means that patch will apply
                      the changes directly to and return the destination
-                     structure.
+                     structure. A change at the root returns a replacement
+                     value, including when ``in_place=True``.
     """
     if not in_place:
         destination = deepcopy(destination)
@@ -303,6 +304,11 @@ def patch(diff_result, destination, in_place=False):
                 dest[key] = value
 
     def change(node, changes):
+        nonlocal destination
+        _, value = changes
+        if node == '' or node == []:
+            destination = deepcopy(value)
+            return
         dest = dot_lookup(destination, node, parent=True)
         if isinstance(node, str):
             last_node = node.split('.')[-1]
@@ -310,7 +316,6 @@ def patch(diff_result, destination, in_place=False):
             last_node = node[-1]
         if isinstance(dest, LIST_TYPES):
             last_node = int(last_node)
-        _, value = changes
         dest[last_node] = value
 
     def remove(node, changes):
