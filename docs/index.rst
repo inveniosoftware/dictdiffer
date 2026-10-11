@@ -98,6 +98,27 @@ Let's revert the last changes:
     reverted = revert(result, patched)
     assert reverted == first
 
+If the root value changes type, the patch replaces the complete root. Always
+use the return value of :func:`.patch`, including with ``in_place=True``:
+
+.. doctest::
+
+    >>> from dictdiffer import diff, patch
+    >>> first = {'items': [1]}
+    >>> second = [2, 3]
+    >>> patch(diff(first, second), first, in_place=True)
+    [2, 3]
+    >>> first
+    {'items': [1]}
+
+A top-level empty dictionary key uses a list path, so it can be distinguished
+from the empty path that represents the root:
+
+.. doctest::
+
+    >>> list(diff({'': 1}, {'': 2}))
+    [('change', [''], (1, 2))]
+
 A tolerance can be used to consider closed values as equal.
 The tolerance parameter only applies for int and float.
 
