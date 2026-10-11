@@ -227,6 +227,28 @@ class DictDifferTests(unittest.TestCase):
 
         assert res == diffed
 
+    def test_unchanged_path_limit_preserves_sibling_changes(self):
+        first = {'unchanged': {}, 'changed': {'value': 1}, 'removed': 1}
+        second = {'unchanged': {}, 'changed': {'value': 2}, 'added': 2}
+        limits = [('unchanged',), ('changed',)]
+        diffed = list(diff(first, second, path_limit=limits))
+        assert diffed == [
+            ('change', ['changed'], ({'value': 1}, {'value': 2})),
+            ('add', '', [('added', 2)]),
+            ('remove', '', [('removed', 1)]),
+        ]
+        assert patch(diffed, first) == second
+        assert revert(diffed, second) == first
+
+    def test_unchanged_wildcard_path_limit_preserves_additions(self):
+        first = {'input': {}, 'output': {}, 'forward': {'WWW': {}}}
+        second = {'input': {}, 'output': {},
+                  'forward': {'WWW': {}, 'FTP': {'port': 21}}}
+        diffed = list(diff(first, second, dot_notation=False,
+                           path_limit=[('*', '*')]))
+        assert diffed == [('add', ['forward'], [('FTP', {'port': 21})])]
+        assert patch(diffed, first) == second
+
     def test_expand_addition(self):
         first = {}
         second = {'foo': 'bar', 'apple': 'banana'}
