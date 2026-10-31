@@ -1,6 +1,11 @@
 Changes
 =======
 
+Unreleased
+----------
+
+- Apply an identical resolved conflict only once during patch unification.
+
 Version v0.10.0 (released 2026-07-16)
 
 - chore(setup): migrate from setuptools to hatchling

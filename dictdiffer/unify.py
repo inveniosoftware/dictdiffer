@@ -20,6 +20,7 @@ class Unifier(object):
         """
         self.unified_patches = []
         self._build_index(conflicts)
+        applied_conflicts = set()
 
         sorted_patches = sorted(first_patches + second_patches, key=get_path)
 
@@ -31,6 +32,9 @@ class Unifier(object):
             if conflict:
                 if conflict.take_patch() != patch:
                     continue
+                if id(conflict) in applied_conflicts:
+                    continue
+                applied_conflicts.add(id(conflict))
 
             self.unified_patches.append(patch)
 
