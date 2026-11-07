@@ -81,14 +81,50 @@ class WildcardDict(dict):
         if key[-1] == '*':
             self.star_keys.add(key[:-1])
 
+    def _discard_wildcard_index(self, key):
+        """Remove a wildcard key from its lookup index, if applicable."""
+        try:
+            suffix = key[-1]
+        except (IndexError, TypeError):
+            return
+
+        if suffix == '+':
+            self.plus_keys.discard(key[:-1])
+        if suffix == '*':
+            self.star_keys.discard(key[:-1])
+
     def __delitem__(self, key):
         """Delete an item and keep the wildcard lookup indices in sync."""
         super(WildcardDict, self).__delitem__(key)
+        self._discard_wildcard_index(key)
 
-        if key[-1] == '+':
-            self.plus_keys.discard(key[:-1])
-        if key[-1] == '*':
-            self.star_keys.discard(key[:-1])
+    def pop(self, key, *args):
+        """Remove an item and keep the wildcard lookup indices in sync."""
+        if len(args) > 1:
+            raise TypeError('pop expected at most 2 arguments, got {}'
+                            .format(len(args) + 1))
+
+        try:
+            value = super(WildcardDict, self).pop(key)
+        except KeyError:
+            if args:
+                return args[0]
+            raise
+
+        self._discard_wildcard_index(key)
+        return value
+
+    def popitem(self):
+        """Remove the last item and keep wildcard lookup indices in sync."""
+        key, value = super(WildcardDict, self).popitem()
+        self._discard_wildcard_index(key)
+        return key, value
+
+    def clear(self):
+        """Remove all items and clear the wildcard lookup indices."""
+        super(WildcardDict, self).clear()
+        self.plus_keys.clear()
+        self.star_keys.clear()
 
     def query_path(self, key):
         """Return the key (path) that matches the queried key.

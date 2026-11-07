@@ -87,6 +87,44 @@ class UtilsTest(unittest.TestCase):
         self.assertEqual('wildcard', wd[('authors', 1)])
         self.assertEqual(('authors', '*'), wd.query_path(('authors', 1)))
 
+    def test_pop_wildcard_falls_back_to_broader_match(self):
+        for wildcard in ('*', '+'):
+            wd = WildcardDict({('*',): 'global',
+                               ('authors', wildcard): 'specific'})
+            self.assertEqual('specific', wd.pop(('authors', wildcard)))
+
+            self.assertEqual('global', wd[('authors', 1)])
+            self.assertEqual(('*',), wd.query_path(('authors', 1)))
+
+        wd = WildcardDict({('authors', '*'): 'wildcard'})
+        self.assertEqual('missing', wd.pop(('authors', '+'), 'missing'))
+        self.assertEqual('wildcard', wd[('authors', 1)])
+        with self.assertRaises(KeyError):
+            wd.pop(('missing', '*'))
+        with self.assertRaises(TypeError):
+            wd.pop(('authors', '*'), None, None)
+
+    def test_popitem_wildcard_falls_back_to_broader_match(self):
+        wd = WildcardDict()
+        wd[('*',)] = 'global'
+        wd[('authors', '*')] = 'specific'
+
+        self.assertEqual((('authors', '*'), 'specific'), wd.popitem())
+        self.assertEqual('global', wd[('authors', 1)])
+        self.assertEqual(('*',), wd.query_path(('authors', 1)))
+
+    def test_clear_removes_wildcard_indices(self):
+        wd = WildcardDict({('*',): 'global',
+                           ('authors', '*'): 'specific',
+                           ('pages', '+'): 'page'})
+        wd.clear()
+
+        self.assertEqual(set(), wd.star_keys)
+        self.assertEqual(set(), wd.plus_keys)
+        wd[('*',)] = 'global'
+        self.assertEqual('global', wd[('authors', 1)])
+        self.assertEqual(('*',), wd.query_path(('authors', 1)))
+
     def test_pathlimit(self):
         path_limit = PathLimit([('author', 'name')])
         self.assertFalse(path_limit.path_is_limit(('author')))
