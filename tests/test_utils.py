@@ -1,4 +1,5 @@
 # SPDX-FileCopyrightText: 2015 CERN.
+# SPDX-FileCopyrightText: 2026 Zhuyuyangyy.
 # SPDX-License-Identifier: MIT
 
 import unittest
@@ -60,6 +61,69 @@ class UtilsTest(unittest.TestCase):
         self.assertEqual(('apple', '+'), wd.query_path(('apple', 'banana')))
         self.assertEqual(('apple', '+'), wd.query_path(('apple', 'mango')))
         self.assertEqual(('foo', 'bar'), wd.query_path(('foo', 'bar')))
+
+    def test_deleted_wildcard_falls_back_to_broader_match(self):
+        for wildcard in ('*', '+'):
+            wd = WildcardDict({('authors', wildcard): 'specific',
+                               ('*',): 'global'})
+            del wd[('authors', wildcard)]
+
+            self.assertEqual('global', wd[('authors', 1)])
+            self.assertEqual(('*',), wd.query_path(('authors', 1)))
+
+    def test_delete_regular_key_preserves_wildcard(self):
+        wd = WildcardDict({('authors', 1): 'specific',
+                           ('authors', '*'): 'wildcard'})
+        del wd[('authors', 1)]
+
+        self.assertEqual('wildcard', wd[('authors', 1)])
+        self.assertEqual(('authors', '*'), wd.query_path(('authors', 1)))
+
+    def test_delete_missing_key_preserves_wildcard(self):
+        wd = WildcardDict({('authors', '*'): 'wildcard'})
+        with self.assertRaises(KeyError):
+            del wd[('authors', '+')]
+
+        self.assertEqual('wildcard', wd[('authors', 1)])
+        self.assertEqual(('authors', '*'), wd.query_path(('authors', 1)))
+
+    def test_pop_wildcard_falls_back_to_broader_match(self):
+        for wildcard in ('*', '+'):
+            wd = WildcardDict({('*',): 'global',
+                               ('authors', wildcard): 'specific'})
+            self.assertEqual('specific', wd.pop(('authors', wildcard)))
+
+            self.assertEqual('global', wd[('authors', 1)])
+            self.assertEqual(('*',), wd.query_path(('authors', 1)))
+
+        wd = WildcardDict({('authors', '*'): 'wildcard'})
+        self.assertEqual('missing', wd.pop(('authors', '+'), 'missing'))
+        self.assertEqual('wildcard', wd[('authors', 1)])
+        with self.assertRaises(KeyError):
+            wd.pop(('missing', '*'))
+        with self.assertRaises(TypeError):
+            wd.pop(('authors', '*'), None, None)
+
+    def test_popitem_wildcard_falls_back_to_broader_match(self):
+        wd = WildcardDict()
+        wd[('*',)] = 'global'
+        wd[('authors', '*')] = 'specific'
+
+        self.assertEqual((('authors', '*'), 'specific'), wd.popitem())
+        self.assertEqual('global', wd[('authors', 1)])
+        self.assertEqual(('*',), wd.query_path(('authors', 1)))
+
+    def test_clear_removes_wildcard_indices(self):
+        wd = WildcardDict({('*',): 'global',
+                           ('authors', '*'): 'specific',
+                           ('pages', '+'): 'page'})
+        wd.clear()
+
+        self.assertEqual(set(), wd.star_keys)
+        self.assertEqual(set(), wd.plus_keys)
+        wd[('*',)] = 'global'
+        self.assertEqual('global', wd[('authors', 1)])
+        self.assertEqual(('*',), wd.query_path(('authors', 1)))
 
     def test_pathlimit(self):
         path_limit = PathLimit([('author', 'name')])
