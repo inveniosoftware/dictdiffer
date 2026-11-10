@@ -712,6 +712,28 @@ class SwapperTests(unittest.TestCase):
         reverted = revert(diffed, second)
         assert reverted == first
 
+    def test_revert_preserves_list_element_order(self):
+        """``revert(diff(a, b), b) == a`` must hold for lists of 3+ elements.
+
+        ``diff`` emits list removals in descending index order so that
+        ``patch``'s ``del dest[key]`` stays valid as the list shrinks. ``swap``
+        turns those ``remove`` entries into ``add`` entries, which ``revert``
+        replays with ``dest.insert(key, value)``; replaying at descending
+        indices into a growing list scrambles the element order, silently
+        corrupting data. The two-element case in ``test_revert`` happens to
+        coincide, so this exercises the >=3 element path (see issue #178).
+        """
+        cases = (
+            ({'x': ['p', 'q', 'r']}, {'x': []}),
+            ({'x': ['p', 'q', 'r', 's']}, {'x': []}),
+            ([{'idx': 1}, {'idx': 2}, {'idx': 3}, {'idx': 4}], []),
+            ([-3, {}, 1], []),
+            (['x', 'y', 'z'], []),
+        )
+        for first, second in cases:
+            reverted = revert(list(diff(first, second)), second)
+            assert reverted == first, (first, reverted)
+
     def test_list_of_different_length(self):
         """Check that one can revert list with different length."""
         first = [1]
