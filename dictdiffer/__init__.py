@@ -357,7 +357,17 @@ def swap(diff_result):
         return REMOVE, node, list(reversed(changes))
 
     def remove(node, changes):
-        return ADD, node, changes
+        # Reverse the (descending) removal indices so that ``patch`` replays
+        # them with ``dest.insert(key, value)`` in ascending order. ``diff``
+        # emits list removals in descending index order (so that ``del
+        # dest[key]`` stays valid as the list shrinks); when those become
+        # additions on ``revert`` the indices must ascend again, otherwise
+        # inserting at descending positions into a growing list scrambles the
+        # element order and breaks the documented ``revert(diff(a, b), b) == a``
+        # round-trip for lists of three or more elements. The symmetric
+        # reversal is harmless for dict removals (assignment order is
+        # irrelevant) and for sets (single entry).
+        return ADD, node, list(reversed(changes))
 
     def change(node, changes):
         first, second = changes
