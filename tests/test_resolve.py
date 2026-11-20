@@ -137,6 +137,60 @@ class ResolverTest(unittest.TestCase):
 
         self.assertEqual(r.unresolved_conflicts, [])
 
+    def test_action_key_error_propagates(self):
+        p1 = ('add', 'foo', [(0, 0)])
+        p2 = ('add', 'foo', [(0, 1)])
+        conflict = Conflict(p1, p2)
+        error = KeyError('required-policy')
+        calls = []
+
+        def specific(*args):
+            calls.append('specific')
+            raise error
+
+        def fallback(*args):
+            calls.append('fallback')
+            return True
+
+        resolver = Resolver({('foo', 0): specific, ('foo',): fallback})
+        with self.assertRaises(KeyError) as caught:
+            resolver.resolve_conflicts([p1], [p2], [conflict])
+
+        self.assertIs(caught.exception, error)
+        self.assertEqual(calls, ['specific'])
+
+    def test_missing_or_unsuccessful_action_falls_back(self):
+        p1 = ('add', 'foo', [(0, 0)])
+        p2 = ('add', 'foo', [(0, 1)])
+
+        def fallback(conflict, *args):
+            conflict.take = 's'
+            return True
+
+        for specific in ({}, {('foo', 0): lambda *args: False}):
+            conflict = Conflict(p1, p2)
+            resolver = Resolver(dict(specific))
+            resolver.actions[('foo',)] = fallback
+            resolver.resolve_conflicts([p1], [p2], [conflict])
+            self.assertEqual(conflict.take, 's')
+            self.assertEqual(resolver.unresolved_conflicts, [])
+
+    def test_no_further_resolution_stops_fallback(self):
+        p1 = ('add', 'foo', [(0, 0)])
+        p2 = ('add', 'foo', [(0, 1)])
+        conflict = Conflict(p1, p2)
+
+        def specific(*args):
+            raise NoFurtherResolutionException
+
+        def fallback(*args):
+            self.fail('A stopped resolution must not try ancestor actions')
+
+        resolver = Resolver({('foo', 0): specific, ('foo',): fallback})
+        with self.assertRaises(UnresolvedConflictsException):
+            resolver.resolve_conflicts([p1], [p2], [conflict])
+        self.assertEqual(resolver.unresolved_conflicts, [conflict])
+
     def test_manual_resolve_conflicts(self):
         p1 = ('add', 'foo', [(0, 0)])
         p2 = ('add', 'foo', [(0, 0)])

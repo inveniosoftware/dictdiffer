@@ -112,16 +112,16 @@ class Resolver(object):
             # Let's do some cascading here
             for sub_path in self._consecutive_slices(conflict_path):
                 try:
-                    if self.actions[sub_path](conflict,
-                                              first_patches,
-                                              second_patches,
-                                              self.additional_info):
+                    action = self.actions[sub_path]
+                except KeyError:
+                    continue
+                try:
+                    if action(conflict, first_patches, second_patches,
+                              self.additional_info):
                         break
                 except NoFurtherResolutionException:
                     self.unresolved_conflicts.append(conflict)
                     break
-                except KeyError:
-                    pass
             else:
                 # The conflict could not be resolved
                 self.unresolved_conflicts.append(conflict)
