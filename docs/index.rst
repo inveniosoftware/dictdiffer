@@ -120,6 +120,38 @@ Now with a tolerance of 1%:
 
     assert list(result) == ('change', 'a', (10.0, 10.5))
 
+Inspecting and Reusing a Diff
+=============================
+
+``diff()`` returns a generator, which can be consumed only once. Calling
+``list(result)`` to print or inspect it consumes that generator. A subsequent
+``patch(result, first)`` then sees no changes and leaves the data unchanged.
+
+Store the materialized list and pass that list to each operation when you need
+to inspect a diff and apply it later:
+
+.. code-block:: python
+
+    from dictdiffer import diff, patch, revert
+
+    first = {'count': 1, 'labels': ['old']}
+    second = {'count': 2, 'labels': ['old', 'new']}
+    changes = list(diff(first, second))
+
+    # Inspecting the list does not consume it.
+    assert list(changes) == changes
+    assert patch(changes, first) == second
+    assert patch(changes, first) == second
+    assert revert(changes, second) == first
+    assert first == {'count': 1, 'labels': ['old']}
+
+If the diff will be applied only once, ``patch(diff(first, second), first)``
+can consume the generator directly without materializing it. ``swap()`` also
+returns a generator; retain ``list(swap(changes))`` if you need to reuse the
+swapped result. ``patch`` and ``revert`` copy their input by default; with
+``in_place=True``, they modify it instead, so applying the same changes twice
+to that mutated input is generally not valid.
+
 API
 ===
 
