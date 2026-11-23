@@ -1,6 +1,14 @@
 Changes
 =======
 
+Unreleased
+
+- Add opt-in aligned and order-insensitive list comparison, preserving
+  duplicate counts and supporting nested, unhashable values (#182, #170).
+- Reverse dependent operations and removal batches in ``swap`` so middle
+  list edits and nested additions can be reverted correctly.
+- Continue comparing siblings after an unchanged value at a path limit.
+
 Version v0.10.0 (released 2026-07-16)
 
 - chore(setup): migrate from setuptools to hatchling

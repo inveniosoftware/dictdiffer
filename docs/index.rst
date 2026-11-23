@@ -120,6 +120,66 @@ Now with a tolerance of 1%:
 
     assert list(result) == ('change', 'a', (10.0, 10.5))
 
+List comparison
+===============
+
+Lists are compared by index by default. Use ``align_lists=True`` to align
+unchanged items and report insertions and removals at their actual positions:
+
+.. doctest::
+
+    >>> from dictdiffer import diff, patch, revert
+    >>> first = ['one', 'two', 'three']
+    >>> second = ['two', 'three']
+    >>> changes = list(diff(first, second, align_lists=True))
+    >>> changes
+    [('remove', '', [(0, 'one')])]
+    >>> patch(changes, first) == second
+    True
+    >>> revert(changes, second) == first
+    True
+
+Replacement gaps are still compared recursively, so editing one field of a
+dictionary in a list produces a field change. Alignment uses a longest common
+subsequence, supports unhashable items and honours ``ignore``, ``tolerance`` and
+``absolute_tolerance``. Index-qualified ignored fields refer to target positions
+when aligning. Equal prefixes and suffixes are scanned directly; the remaining
+alignment takes quadratic time and linear auxiliary space in the list lengths.
+
+Use ``ignore_order=True`` to compare lists as multisets, recursively, while
+retaining duplicate counts. This takes precedence over ``align_lists``:
+
+.. doctest::
+
+    >>> list(diff([{'a': 1}, {'b': 2}], [{'b': 2}, {'a': 1}], ignore_order=True))
+    []
+    >>> first, second = [1, 2, 1], [2, 3, 1]
+    >>> changes = list(diff(first, second, ignore_order=True))
+    >>> patched = patch(changes, first)
+    >>> patched
+    [1, 2, 3]
+    >>> list(diff(patched, second, ignore_order=True))
+    []
+    >>> revert(changes, patched) == first
+    True
+
+An unordered patch retains matched items in source order and appends unmatched
+target items. It need not reproduce the target's order. Pass the actual patched
+value to ``revert`` to restore the original order. Matching respects numeric
+tolerances and ignored dictionary keys; index-qualified ignored fields refer to
+the candidate's position in the first list. A maximum one-to-one matching avoids
+false differences when numeric tolerances overlap. It uses linear auxiliary
+space, with worst-case cubic time for equal-length lists. Prefer the default
+positional comparison when order matters and the lists are large.
+
+Both options work with ``expand``, ``dot_notation`` and ``path_limit``. As with
+ordinary diffs, ignored or numerically equivalent values are retained rather
+than replaced. Diff payloads remain deep copies.
+
+``swap`` reverses operation order as well as addition/removal batches, ensuring
+that edits to shifted list indices and nested additions are undone correctly.
+It consumes the complete input iterator before yielding its first operation.
+
 API
 ===
 

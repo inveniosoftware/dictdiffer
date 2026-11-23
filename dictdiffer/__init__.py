@@ -7,7 +7,9 @@
 
 from collections.abc import Iterable, MutableMapping, MutableSequence, MutableSet
 from copy import deepcopy
+from itertools import chain
 
+from ._lists import ordered_matches, unordered_matches
 from .utils import EPSILON, PathLimit, are_different, dot_lookup
 from .version import __version__
 
@@ -29,7 +31,8 @@ except ImportError:  # pragma: no cover
 
 
 def diff(first, second, node=None, ignore=None, path_limit=None, expand=False,
-         tolerance=EPSILON, absolute_tolerance=None, dot_notation=True):
+         tolerance=EPSILON, absolute_tolerance=None, dot_notation=True,
+         align_lists=False, ignore_order=False):
     """Compare two dictionary/list/set objects, and returns a diff result.
 
     Return an iterator with differences between two objects. The diff items
@@ -102,6 +105,11 @@ def diff(first, second, node=None, ignore=None, path_limit=None, expand=False,
     :param absolute_tolerance: Absolute threshold to consider when comparing
                                two float numbers.
     :param dot_notation: Boolean to toggle dot notation on and off.
+    :param align_lists: Align equal list items before comparing replacement
+                       gaps, detecting insertions and removals in the middle.
+    :param ignore_order: Compare lists as multisets, including duplicate counts.
+                         Overrides ``align_lists``. Patches retain the order of
+                         matched source items and append unmatched target items.
 
     .. versionchanged:: 0.3
        Added *ignore* parameter.
@@ -145,6 +153,103 @@ def diff(first, second, node=None, ignore=None, path_limit=None, expand=False,
         else:
             return default_type(node)
 
+    def check(node, key):
+        """Test whether a dictionary key participates in comparison."""
+        return ignore is None or (
+            dotted(node + [key], default_type=tuple) not in ignore and
+            tuple(node + [key]) not in ignore
+        )
+
+    def equal(left, right, node):
+        """Compare candidates using the same ignore and numeric options."""
+        if isinstance(left, DICT_TYPES) and isinstance(right, DICT_TYPES):
+            left_keys = [key for key in left if check(node, key)]
+            right_keys = [key for key in right if check(node, key)]
+            return (len(left_keys) == len(right_keys) and
+                    all(key in right and equal(left[key], right[key],
+                                               node + [key])
+                        for key in left_keys))
+        if isinstance(left, LIST_TYPES) and isinstance(right, LIST_TYPES):
+            if len(left) != len(right):
+                return False
+            if ignore_order:
+                matches, _ = unordered_matches(
+                    len(left), len(right),
+                    lambda i, j: equal(left[i], right[j], node + [i]))
+                return all(index >= 0 for index in matches)
+            return all(equal(left[i], right[i], node + [i])
+                       for i in range(len(left)))
+        return not are_different(left, right, tolerance, absolute_tolerance)
+
+    def compare(left, right, node):
+        """Compare a child, aggregating changes at a path limit."""
+        if path_limit and path_limit.path_is_limit(node):
+            same = (equal(left, right, node) if align_lists or ignore_order
+                    else left == right)
+            if not same:
+                yield CHANGE, node, (deepcopy(left), deepcopy(right))
+        else:
+            yield from _diff_recursive(left, right, node)
+
+    def emit(action, node, items):
+        """Emit a nonempty batch, optionally expanded into individual items."""
+        if expand:
+            for item in items:
+                yield action, dotted(node), [item]
+        elif items:
+            yield action, dotted(node), items
+
+    def add_items(node, items):
+        """Add items before emitting any nested path-limited additions."""
+        values = []
+        children = []
+        for key, value in items:
+            if (path_limit and
+                    isinstance(value, SET_TYPES + LIST_TYPES + DICT_TYPES) and
+                    not path_limit.path_is_limit(node + [key])):
+                values.append((key, value.__class__()))
+                children.append(_diff_recursive(value.__class__(), value,
+                                                node + [key]))
+            else:
+                values.append((key, deepcopy(value)))
+        yield from emit(ADD, node, values)
+        for child in children:
+            yield from child
+
+    def diff_list(left, right, node):
+        """Produce operations at the indices in effect when they are applied."""
+        if ignore_order:
+            first_matches, second_matches = unordered_matches(
+                len(left), len(right),
+                lambda i, j: equal(left[i], right[j], node + [i]))
+            removed = [(i, deepcopy(left[i]))
+                       for i in reversed(range(len(left)))
+                       if first_matches[i] < 0]
+            yield from emit(REMOVE, node, removed)
+            remaining = len(left) - len(removed)
+            added = [right[j] for j in range(len(right))
+                     if second_matches[j] < 0]
+            yield from add_items(node, enumerate(added, remaining))
+            return
+
+        matches = ordered_matches(
+            len(left), len(right),
+            lambda i, j: equal(left[i], right[j], node + [j]))
+        first_start = second_start = 0
+        # A sentinel also processes the gap after the last matched item.
+        for first_end, second_end in chain(matches, [(len(left), len(right))]):
+            common = min(first_end - first_start, second_end - second_start)
+            for offset in range(common):
+                yield from compare(left[first_start + offset],
+                                   right[second_start + offset],
+                                   node + [second_start + offset])
+            removed = [(second_start + i - first_start, deepcopy(left[i]))
+                       for i in reversed(range(first_start + common, first_end))]
+            yield from emit(REMOVE, node, removed)
+            additions = ((j, right[j]) for j in range(second_start + common, second_end))
+            yield from add_items(node, additions)
+            first_start, second_start = first_end + 1, second_end + 1
+
     def _diff_recursive(_first, _second, _node=None):
         _node = _node or []
 
@@ -154,21 +259,17 @@ def diff(first, second, node=None, ignore=None, path_limit=None, expand=False,
 
         if isinstance(_first, DICT_TYPES) and isinstance(_second, DICT_TYPES):
             # dictionaries are not hashable, we can't use sets
-            def check(key):
-                """Test if key in current node should be ignored."""
-                return ignore is None or (
-                    dotted(_node + [key], default_type=tuple) not in ignore and
-                    tuple(_node + [key]) not in ignore
-                )
-
-            intersection = [k for k in _first if k in _second and check(k)]
-            addition = [k for k in _second if k not in _first and check(k)]
-            deletion = [k for k in _first if k not in _second and check(k)]
+            intersection = [k for k in _first if k in _second and check(_node, k)]
+            addition = [k for k in _second if k not in _first and check(_node, k)]
+            deletion = [k for k in _first if k not in _second and check(_node, k)]
 
             differ = True
 
         elif isinstance(_first, LIST_TYPES) and isinstance(_second,
                                                            LIST_TYPES):
+            if align_lists or ignore_order:
+                yield from diff_list(_first, _second, _node)
+                return
             len_first = len(_first)
             len_second = len(_second)
 
@@ -202,61 +303,11 @@ def diff(first, second, node=None, ignore=None, path_limit=None, expand=False,
                 # if type is not changed,
                 # callees again diff function to compare.
                 # otherwise, the change will be handled as `change` flag.
-                if path_limit and path_limit.path_is_limit(_node + [key]):
-                    if _first[key] == _second[key]:
-                        return
-
-                    yield CHANGE, _node + [key], (
-                        deepcopy(_first[key]), deepcopy(_second[key])
-                    )
-                else:
-                    recurred = _diff_recursive(
-                        _first[key], _second[key],
-                        _node=_node + [key],
-                    )
-
-                    for diffed in recurred:
-                        yield diffed
+                yield from compare(_first[key], _second[key], _node + [key])
 
             if addition:
-                if path_limit:
-                    collect = []
-                    collect_recurred = []
-                    for key in addition:
-                        if not isinstance(_second[key],
-                                          SET_TYPES + LIST_TYPES + DICT_TYPES):
-                            collect.append((key, deepcopy(_second[key])))
-                        elif path_limit.path_is_limit(_node + [key]):
-                            collect.append((key, deepcopy(_second[key])))
-                        else:
-                            collect.append((key, _second[key].__class__()))
-                            recurred = _diff_recursive(
-                                _second[key].__class__(),
-                                _second[key],
-                                _node=_node + [key],
-                            )
-
-                            collect_recurred.append(recurred)
-
-                    if expand:
-                        for key, val in collect:
-                            yield ADD, dotted_node, [(key, val)]
-                    else:
-                        yield ADD, dotted_node, collect
-
-                    for recurred in collect_recurred:
-                        for diffed in recurred:
-                            yield diffed
-                else:
-                    if expand:
-                        for key in addition:
-                            yield ADD, dotted_node, [
-                                (key, deepcopy(_second[key]))]
-                    else:
-                        yield ADD, dotted_node, [
-                            # for additions, return a list that consist with
-                            # two-pair tuples.
-                            (key, deepcopy(_second[key])) for key in addition]
+                additions = ((key, _second[key]) for key in addition)
+                yield from add_items(_node, additions)
 
             if deletion:
                 if expand:
@@ -342,6 +393,9 @@ def swap(diff_result):
     - add -> remove
 
     In addition, swap the changed values for `change` flag.
+    Operations and addition/removal batches are reversed so dependent edits
+    are undone in the correct order. The input iterator is consumed before
+    the first inverse operation is yielded.
 
         >>> from dictdiffer import swap
         >>> swapped = swap([('add', 'a.b.c', [('a', 'b'), ('c', 'd')])])
@@ -357,7 +411,7 @@ def swap(diff_result):
         return REMOVE, node, list(reversed(changes))
 
     def remove(node, changes):
-        return ADD, node, changes
+        return ADD, node, list(reversed(changes))
 
     def change(node, changes):
         first, second = changes
@@ -369,7 +423,7 @@ def swap(diff_result):
         CHANGE: change
     }
 
-    for action, node, change in diff_result:
+    for action, node, change in reversed(list(diff_result)):
         yield swappers[action](node, change)
 
 
